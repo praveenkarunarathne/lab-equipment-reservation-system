@@ -1,0 +1,30 @@
+import { Router } from 'express';
+import { AppError } from '../shared/AppError.js';
+import { csrfProtection, issueCsrfToken } from '../middleware/csrf.js';
+
+export function createApiRouter({
+  env,
+  connection,
+  sessionMiddleware,
+  routes,
+}) {
+  const router = Router();
+  router.get('/health', async (_req, res) => {
+    try {
+      if (connection.readyState !== 1)
+        throw new Error('Database disconnected.');
+      await connection.db.command({ ping: 1 }, { timeoutMS: 2000 });
+    } catch {
+      throw new AppError(
+        503,
+        'SERVICE_UNAVAILABLE',
+        'Service temporarily unavailable.',
+      );
+    }
+    res.json({ data: { status: 'ok', database: 'ok' } });
+  });
+  router.use(sessionMiddleware, csrfProtection(env.appOrigin));
+  router.get('/auth/csrf', issueCsrfToken);
+  router.use(routes);
+  return router;
+}

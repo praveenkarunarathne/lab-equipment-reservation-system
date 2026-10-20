@@ -14,5 +14,42 @@ export function loadEnv(source = process.env) {
     throw new Error('MONGODB_URI must be a MongoDB connection URI.');
   }
 
-  return { nodeEnv, port, mongodbUri };
+  let origin;
+  try {
+    origin = new URL(source.APP_ORIGIN);
+  } catch {
+    throw new Error('APP_ORIGIN must be an exact HTTP(S) origin.');
+  }
+  if (
+    !['http:', 'https:'].includes(origin.protocol) ||
+    origin.origin !== source.APP_ORIGIN ||
+    (nodeEnv === 'production' && origin.protocol !== 'https:')
+  ) {
+    throw new Error(
+      'APP_ORIGIN must be an exact origin, using HTTPS in production.',
+    );
+  }
+
+  const sessionSecret = source.SESSION_SECRET;
+  if (!sessionSecret || Buffer.byteLength(sessionSecret.trim()) < 32) {
+    throw new Error('SESSION_SECRET must contain at least 32 random bytes.');
+  }
+
+  const logLevel = source.LOG_LEVEL ?? 'info';
+  if (
+    !['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'].includes(
+      logLevel,
+    )
+  ) {
+    throw new Error('LOG_LEVEL must be a valid Pino log level.');
+  }
+
+  return {
+    nodeEnv,
+    port,
+    mongodbUri,
+    appOrigin: origin.origin,
+    sessionSecret,
+    logLevel,
+  };
 }

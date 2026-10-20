@@ -1,0 +1,42 @@
+import helmet from 'helmet';
+import { AppError } from '../shared/AppError.js';
+
+export function security(env) {
+  const production = env.nodeEnv === 'production';
+  return helmet({
+    contentSecurityPolicy: production
+      ? {
+          useDefaults: false,
+          directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'"],
+            styleSrc: ["'self'"],
+            imgSrc: ["'self'"],
+            connectSrc: ["'self'"],
+            objectSrc: ["'none'"],
+            baseUri: ["'self'"],
+            formAction: ["'self'"],
+            frameAncestors: ["'none'"],
+          },
+        }
+      : false,
+    strictTransportSecurity: production,
+  });
+}
+
+export function requireJson(req, _res, next) {
+  if (
+    !['GET', 'HEAD', 'OPTIONS'].includes(req.method) &&
+    req.get('Content-Type')?.split(';')[0].trim().toLowerCase() !==
+      'application/json'
+  ) {
+    return next(
+      new AppError(
+        415,
+        'UNSUPPORTED_MEDIA_TYPE',
+        'Use application/json for unsafe requests.',
+      ),
+    );
+  }
+  next();
+}

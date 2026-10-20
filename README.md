@@ -1,8 +1,8 @@
 # Lab Equipment Reservation System
 
-MERN application for reserving laboratory equipment. This first increment sets up
-the JavaScript ESM monorepo, React/Vite client, Express server, and local MongoDB
-replica set described in [IMPLEMENTATION_SPEC.md](IMPLEMENTATION_SPEC.md).
+MERN application for reserving laboratory equipment. The project currently includes
+the monorepo setup and secure API foundation from commits 01 and 02 of the plan in
+[IMPLEMENTATION_SPEC.md](IMPLEMENTATION_SPEC.md).
 
 ## Prerequisites
 
@@ -22,6 +22,17 @@ From the repository root:
 ```sh
 bun install --frozen-lockfile
 cp .env.example .env
+```
+
+Generate a session secret and paste the output into `SESSION_SECRET` in `.env`:
+
+```sh
+bun -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
+```
+
+Then start the database:
+
+```sh
 docker compose up -d --wait mongo
 bun run db:replset-init
 bun run db:check
@@ -42,9 +53,8 @@ bun run dev:client
 ```
 
 Open <http://localhost:5173>. Express listens on port `3000` and connects to MongoDB
-before accepting requests. Its setup response is available at
-<http://localhost:3000/>. Vite proxies `/api` requests to Express for subsequent API
-implementation.
+before accepting requests. Readiness is available at
+<http://localhost:3000/api/v1/health>. Vite proxies `/api` requests to Express.
 
 Local MongoDB uses:
 
@@ -73,8 +83,10 @@ bun run build
 ```
 
 `bun run format` formats project files. The original implementation spec is
-excluded to preserve the supplied document. Vitest runs the setup smoke tests;
-the feature integration and component suites belong to subsequent commits.
+excluded to preserve the supplied document. Vitest runs configuration tests and
+Supertest integration tests against a temporary MongoDB `8.0.32` replica set.
+Docker is not needed for tests; the first run downloads the MongoDB binary and
+requires network access. Tests use their own database and random session secret.
 
 `bun run build` produces `client/dist`. `bun run start` starts Express without
 watch mode; production SPA serving and deployment are scheduled for commit 10.
@@ -84,18 +96,40 @@ watch mode; production SPA serving and deployment are scheduled for commit 10.
 - `client/src`: React application and base styles.
 - `server/src/config`: environment validation.
 - `server/src/db`: connection, local replica-set initialization, transaction check.
+- `server/src/middleware`: validation, request IDs, security, limits, sessions, CSRF, errors.
+- `server/src/routes`: versioned API router and health readiness.
+- `server/src/shared`: safe logger, application errors, ObjectId validation.
 - `server/src/app.js`: Express application factory.
 - `server/src/server.js`: startup and graceful shutdown.
-- `server/test`: setup smoke tests.
+- `server/test`: configuration and API middleware integration tests.
 
-Only dependencies used in this increment are installed. Domain modules, routing,
-security middleware, database indexes, migration and seed commands, authentication,
-and feature tests are added with their planned commits rather than empty stubs.
+Only dependencies used by the current increments are installed. Domain modules,
+migration and seed commands, authentication, and client feature pages are added
+with their planned commits.
 
-`.env` is ignored. `APP_ORIGIN`, `SESSION_SECRET`, and `LOG_LEVEL` are documented in
-`.env.example` for the upcoming security foundation; they are not consumed by the
-setup server. Generate a session secret before implementing authentication:
+## API foundation
 
-```sh
-bun -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
-```
+- `GET /api/v1/health` performs a database ping with a two-second deadline. It
+  returns `{ data: { status: "ok", database: "ok" } }`, or a safe JSON `503`.
+- `GET /api/v1/auth/csrf` creates a pre-auth session and returns
+  `{ data: { csrfToken } }`. Retain the cookie and send this token as
+  `X-CSRF-Token` on unsafe API requests, with `Content-Type: application/json`.
+- Unsafe requests check `Origin` (or `Referer` when Origin is absent) against
+  `APP_ORIGIN`, reject cross-site fetches, and require the session's CSRF token.
+- All API responses disable caching. Errors return
+  `{ error: { code, message, fieldErrors?, requestId } }`; every request receives
+  a generated `X-Request-Id`.
+- Sessions live in MongoDB for eight hours. Production uses a secure,
+  HTTP-only `__Host-lab.sid` cookie and trusts one proxy; development uses
+  `lab.sid` over HTTP. `APP_ORIGIN` must be an exact origin and use HTTPS in
+  production. `SESSION_SECRET` is now required at startup.
+- General API requests allow 120 requests/minute/IP. Login and registration
+  paths share a limit of 10 requests/15 minutes/IP, ready for commit 03.
+- Startup explicitly creates the session TTL index and calls `createIndexes()`
+  for all registered Mongoose models before listening. Domain schemas and their
+  critical indexes will be added in their feature commits.
+- Pino records request method, path, status, duration, request ID, and authenticated
+  actor when present. It omits request bodies, headers, query values, and error
+  messages that could contain secrets; unexpected failures retain stack frames.
+
+Login, registration, and role-based authorization are scheduled for commit 03.

@@ -1,0 +1,17 @@
+{
+  "name": "@lab/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch --env-file-if-exists=../.env src/server.js",
+    "start": "node --env-file-if-exists=../.env src/server.js",
+    "test": "vitest run",
+    "db:replset-init": "node --env-file-if-exists=../.env src/db/initReplicaSet.js",
+    "db:check": "node --env-file-if-exists=../.env src/db/checkTransaction.js"
+  },
+  "dependencies": {
+    "express": "5.2.1",
+    "mongoose": "9.11.0"
+  }
+}

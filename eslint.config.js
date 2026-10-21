@@ -11,7 +11,7 @@ export default [
     languageOptions: { ecmaVersion: 'latest', sourceType: 'module' },
   },
   {
-    files: ['server/**/*.js', '*.js', 'client/vite.config.js'],
+    files: ['server/**/*.js', '*.js', 'client/*.config.js'],
     languageOptions: { globals: globals.node },
   },
   {

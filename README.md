@@ -1,7 +1,7 @@
 # Lab Equipment Reservation System
 
 MERN application for reserving laboratory equipment. The project currently includes
-the monorepo setup and secure API foundation from commits 01 and 02 of the plan in
+the monorepo setup, secure API foundation, and authentication from commits 01–03 of the plan in
 [IMPLEMENTATION_SPEC.md](IMPLEMENTATION_SPEC.md).
 
 ## Prerequisites
@@ -87,13 +87,16 @@ excluded to preserve the supplied document. Vitest runs configuration tests and
 Supertest integration tests against a temporary MongoDB `8.0.32` replica set.
 Docker is not needed for tests; the first run downloads the MongoDB binary and
 requires network access. Tests use their own database and random session secret.
+React Testing Library tests cover forms, session bootstrapping, route guards,
+CSRF rotation, and logout. Run either suite with `bun run test:server` or
+`bun run test:client`.
 
 `bun run build` produces `client/dist`. `bun run start` starts Express without
 watch mode; production SPA serving and deployment are scheduled for commit 10.
 
 ## Structure and scope
 
-- `client/src`: React application and base styles.
+- `client/src`: React authentication pages, session context, route guards, and styles.
 - `server/src/config`: environment validation.
 - `server/src/db`: connection, local replica-set initialization, transaction check.
 - `server/src/middleware`: validation, request IDs, security, limits, sessions, CSRF, errors.
@@ -101,11 +104,11 @@ watch mode; production SPA serving and deployment are scheduled for commit 10.
 - `server/src/shared`: safe logger, application errors, ObjectId validation.
 - `server/src/app.js`: Express application factory.
 - `server/src/server.js`: startup and graceful shutdown.
-- `server/test`: configuration and API middleware integration tests.
+- `server/src/modules`: authentication services/controllers/routes and User model/DTO.
+- `server/test`: configuration, API middleware, authentication, and authorization tests.
 
-Only dependencies used by the current increments are installed. Domain modules,
-migration and seed commands, authentication, and client feature pages are added
-with their planned commits.
+Only dependencies used by the current increments are installed. Equipment,
+reservations, faults, and dashboard features follow in later commits.
 
 ## API foundation
 
@@ -124,7 +127,7 @@ with their planned commits.
   `lab.sid` over HTTP. `APP_ORIGIN` must be an exact origin and use HTTPS in
   production. `SESSION_SECRET` is now required at startup.
 - General API requests allow 120 requests/minute/IP. Login and registration
-  paths share a limit of 10 requests/15 minutes/IP, ready for commit 03.
+  paths share a limit of 10 requests/15 minutes/IP.
 - Startup explicitly creates the session TTL index and calls `createIndexes()`
   for all registered Mongoose models before listening. Domain schemas and their
   critical indexes will be added in their feature commits.
@@ -132,4 +135,47 @@ with their planned commits.
   actor when present. It omits request bodies, headers, query values, and error
   messages that could contain secrets; unexpected failures retain stack frames.
 
-Login, registration, and role-based authorization are scheduled for commit 03.
+## Authentication
+
+Open <http://localhost:5173/register> to create a student account, then sign in at
+<http://localhost:5173/login>. Registration does not sign you in automatically.
+Passwords must contain 15–128 Unicode code points; spaces are preserved exactly.
+Names and emails are trimmed, and emails are lowercased.
+
+The API supports:
+
+- `POST /api/v1/auth/register`: strict `{ name, email, password }`; creates a student.
+- `POST /api/v1/auth/login`: `{ email, password }`; regenerates the session and
+  returns `{ data: { user, csrfToken } }`. Replace the old CSRF token on success.
+- `GET /api/v1/auth/me`: current user, or `401 AUTH_REQUIRED`.
+- `POST /api/v1/auth/logout`: authenticated, CSRF required, no body needed; returns
+  `204`, removes the stored session, and clears its cookie.
+
+The browser keeps user and CSRF state in memory, and restores the session on
+reload. Authoritative `401` responses clear the UI session. Route guards provide
+navigation behavior; `requireAuth` and `requireRole` enforce API authorization.
+Student and admin landing routes currently show the signed-in workspace; catalog
+and dashboard features are not implemented yet.
+
+## Seed an administrator
+
+There is no public admin registration. Temporarily add these seed-only values to
+your ignored `.env` file:
+
+```dotenv
+ADMIN_BOOTSTRAP_NAME=Lab Administrator
+ADMIN_BOOTSTRAP_EMAIL=admin@example.com
+ADMIN_BOOTSTRAP_PASSWORD=<a unique password of 15–128 Unicode characters>
+```
+
+Then run:
+
+```sh
+bun run db:seed-admin
+```
+
+Remove the bootstrap values from `.env` afterward. The seed uses the same
+validation and Argon2id settings as registration. Repeating it leaves an existing
+admin unchanged and refuses to promote or overwrite an existing student. It never
+runs at server startup. Sign in normally with the seeded credentials to reach
+`/admin`.

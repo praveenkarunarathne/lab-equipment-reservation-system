@@ -7,10 +7,12 @@
     "dev": "node --watch --env-file-if-exists=../.env src/server.js",
     "start": "node --env-file-if-exists=../.env src/server.js",
     "test": "vitest run",
+    "db:seed-admin": "node --env-file-if-exists=../.env src/db/seedAdmin.js",
     "db:replset-init": "node --env-file-if-exists=../.env src/db/initReplicaSet.js",
     "db:check": "node --env-file-if-exists=../.env src/db/checkTransaction.js"
   },
   "dependencies": {
+    "argon2": "0.45.1",
     "connect-mongo": "6.0.0",
     "express": "5.2.1",
     "express-rate-limit": "8.7.0",

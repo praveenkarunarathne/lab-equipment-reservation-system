@@ -25,8 +25,12 @@ export function security(env) {
 }
 
 export function requireJson(req, _res, next) {
+  const hasBody =
+    req.get('Transfer-Encoding') !== undefined ||
+    Number(req.get('Content-Length') ?? 0) > 0;
   if (
     !['GET', 'HEAD', 'OPTIONS'].includes(req.method) &&
+    (hasBody || req.get('Content-Type') !== undefined) &&
     req.get('Content-Type')?.split(';')[0].trim().toLowerCase() !==
       'application/json'
   ) {

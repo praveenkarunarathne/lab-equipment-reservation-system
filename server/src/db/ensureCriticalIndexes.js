@@ -1,4 +1,7 @@
+import { getUserModel } from '../modules/users/user.model.js';
+
 export async function ensureCriticalIndexes(connection) {
+  getUserModel(connection);
   for (const model of Object.values(connection.models)) {
     await model.createIndexes();
   }

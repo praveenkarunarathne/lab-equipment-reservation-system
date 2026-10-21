@@ -19,7 +19,10 @@
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "bun run --cwd server test",
+    "test": "bun run test:server && bun run test:client",
+    "test:server": "bun run --cwd server test",
+    "test:client": "bun run --cwd client test",
+    "db:seed-admin": "bun run --cwd server db:seed-admin",
     "db:replset-init": "bun run --cwd server db:replset-init",
     "db:check": "bun run --cwd server db:check"
   },

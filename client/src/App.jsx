@@ -1,8 +1,16 @@
+import { BrowserRouter } from 'react-router';
+import { AuthProvider } from './auth/AuthContext.jsx';
+import AppRoutes from './routes/AppRoutes.jsx';
+
 export default function App() {
   return (
-    <main>
-      <h1>Lab Equipment Reservation System</h1>
-      <p>The project is ready for development.</p>
-    </main>
+    <AuthProvider>
+      <BrowserRouter>
+        <main>
+          <p className="brand">Lab Equipment Reservation System</p>
+          <AppRoutes />
+        </main>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }

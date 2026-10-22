@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { AppError } from '../shared/AppError.js';
 import { csrfProtection, issueCsrfToken } from '../middleware/csrf.js';
 import { createAuthRouter } from '../modules/auth/auth.routes.js';
+import { createEquipmentRouter } from '../modules/equipment/equipment.routes.js';
 
 export function createApiRouter({
   env,
@@ -27,6 +28,7 @@ export function createApiRouter({
   router.use(sessionMiddleware, csrfProtection(env.appOrigin));
   router.get('/auth/csrf', issueCsrfToken);
   router.use('/auth', createAuthRouter(connection, env));
+  router.use('/equipment', createEquipmentRouter(connection));
   router.use(routes);
   return router;
 }

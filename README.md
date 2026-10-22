@@ -1,7 +1,7 @@
 # Lab Equipment Reservation System
 
 MERN application for reserving laboratory equipment. The project currently includes
-the monorepo setup, secure API foundation, and authentication from commits 01–03 of the plan in
+the monorepo setup, API foundation, authentication, and equipment catalog from commits 01–04 of the plan in
 [IMPLEMENTATION_SPEC.md](IMPLEMENTATION_SPEC.md).
 
 ## Prerequisites
@@ -90,13 +90,16 @@ requires network access. Tests use their own database and random session secret.
 React Testing Library tests cover forms, session bootstrapping, route guards,
 CSRF rotation, and logout. Run either suite with `bun run test:server` or
 `bun run test:client`.
+Equipment tests also cover search, pagination, validation, admin permissions,
+metadata editing, and the partial unique reservation index. Server suites run
+sequentially to avoid competing MongoDB binary downloads on a fresh checkout.
 
 `bun run build` produces `client/dist`. `bun run start` starts Express without
 watch mode; production SPA serving and deployment are scheduled for commit 10.
 
 ## Structure and scope
 
-- `client/src`: React authentication pages, session context, route guards, and styles.
+- `client/src`: React authentication and equipment pages, session context, route guards, and styles.
 - `server/src/config`: environment validation.
 - `server/src/db`: connection, local replica-set initialization, transaction check.
 - `server/src/middleware`: validation, request IDs, security, limits, sessions, CSRF, errors.
@@ -104,11 +107,11 @@ watch mode; production SPA serving and deployment are scheduled for commit 10.
 - `server/src/shared`: safe logger, application errors, ObjectId validation.
 - `server/src/app.js`: Express application factory.
 - `server/src/server.js`: startup and graceful shutdown.
-- `server/src/modules`: authentication services/controllers/routes and User model/DTO.
+- `server/src/modules`: auth and equipment modules, User model/DTO, and Reservation schema.
 - `server/test`: configuration, API middleware, authentication, and authorization tests.
 
-Only dependencies used by the current increments are installed. Equipment,
-reservations, faults, and dashboard features follow in later commits.
+Only dependencies used by the current increments are installed. Equipment lifecycle,
+reservation workflows, faults, and dashboard features follow in later commits.
 
 ## API foundation
 
@@ -154,8 +157,38 @@ The API supports:
 The browser keeps user and CSRF state in memory, and restores the session on
 reload. Authoritative `401` responses clear the UI session. Route guards provide
 navigation behavior; `requireAuth` and `requireRole` enforce API authorization.
-Student and admin landing routes currently show the signed-in workspace; catalog
-and dashboard features are not implemented yet.
+Students land on the available equipment catalog. Administrators can manage
+equipment from `/admin/equipment`; the dashboard follows in a later commit.
+
+## Equipment catalog
+
+- `/equipment`: authenticated catalog with submitted search/category/status filters,
+  pagination, visible status labels, and links to equipment details. Students
+  initially see available equipment and can select other statuses.
+- `/equipment/:id`: equipment metadata, description, operational status, and reason.
+- `/admin/equipment`: admin catalog with all current statuses and creation/edit links.
+- `/admin/equipment/new` and `/admin/equipment/:id/edit`: admin metadata forms.
+
+The API supports:
+
+- `GET /api/v1/equipment`: authenticated list returning `{ data, pagination }`.
+  `page` defaults to 1 (max 1,000,000); `limit` defaults to 12 (max 50).
+  Optional filters are `q` (max 80), `category` (exact, case-insensitive, max 50),
+  and `status` (`available`, `maintenance`, `unavailable`). Search matches literal
+  text across name, asset code, category, and location. Results sort by name then
+  asset code. Archived equipment is always excluded; the API has no default status.
+- `GET /api/v1/equipment/:id`: non-archived equipment or a JSON `404`.
+- `POST /api/v1/equipment`: admin and CSRF required; strict metadata body
+  `{ assetCode, name, category, location, description? }`. Creates available equipment
+  and records the admin's status audit. Asset codes are trimmed, uppercased, and unique.
+- `PATCH /api/v1/equipment/:id`: admin and CSRF required; at least one metadata field.
+  Operational status, archive data, and internal fields are rejected.
+
+Startup creates equipment indexes and the Reservation schema's indexes, including
+the unique active `(equipmentId, startAt)` index. Cancelled reservations can share
+a slot, so cancellation history does not prevent rebooking. Booking APIs and
+schedule validation are not exposed yet. Equipment status/archive workflows are
+scheduled for commit 05.
 
 ## Seed an administrator
 

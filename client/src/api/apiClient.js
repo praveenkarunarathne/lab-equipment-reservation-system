@@ -28,5 +28,5 @@ export async function apiRequest(
     Object.assign(error, payload.error, { status: response.status });
     throw error;
   }
-  return payload.data;
+  return payload.pagination ? payload : payload.data;
 }

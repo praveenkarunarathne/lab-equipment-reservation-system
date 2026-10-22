@@ -68,3 +68,74 @@ nav {
 nav span {
   margin-left: auto;
 }
+
+select,
+textarea {
+  font: inherit;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid #8795a9;
+  border-radius: 0.35rem;
+  background: white;
+}
+.catalog-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+.catalog-filters .form-field {
+  margin-bottom: 0;
+}
+.table-container {
+  overflow-x: auto;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  background: white;
+}
+th,
+td {
+  text-align: left;
+  border-bottom: 1px solid #d6dce5;
+  padding: 0.8rem;
+}
+.status-badge {
+  display: inline-block;
+  border-radius: 1rem;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.9rem;
+}
+.status-available {
+  background: #d6f0e1;
+  color: #155b34;
+}
+.status-maintenance {
+  background: #fff0c2;
+  color: #755100;
+}
+.status-unavailable {
+  background: #fce0e4;
+  color: #8e1b2d;
+}
+.equipment-form {
+  max-width: 35rem;
+}
+fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+dt {
+  font-weight: 600;
+  margin-top: 1rem;
+}
+dd {
+  margin-left: 0;
+}
+.equipment-description {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

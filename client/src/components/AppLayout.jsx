@@ -23,6 +23,9 @@ export default function AppLayout() {
         <nav aria-label="Main navigation">
           <Link to="/equipment">Equipment</Link>
           {user.role === 'admin' && <Link to="/admin">Administration</Link>}
+          {user.role === 'admin' && (
+            <Link to="/admin/equipment">Manage equipment</Link>
+          )}
           <span>{user.name}</span>
           <button onClick={signOut} disabled={busy}>
             {busy ? 'Signing out…' : 'Sign out'}

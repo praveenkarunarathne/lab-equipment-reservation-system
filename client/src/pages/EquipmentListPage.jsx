@@ -1,0 +1,132 @@
+import { Link, useSearchParams } from 'react-router';
+import { useAuth } from '../auth/useAuth.js';
+import { useApiResource } from '../api/useApiResource.js';
+import StatusBadge from '../components/StatusBadge.jsx';
+import Pagination from '../components/Pagination.jsx';
+import ErrorMessage from '../components/ErrorMessage.jsx';
+
+export default function EquipmentListPage({ admin = false }) {
+  const { user } = useAuth();
+  const [params, setParams] = useSearchParams();
+  const status =
+    params.get('status') ||
+    (admin || user.role === 'admin' ? 'all' : 'available');
+  const query = new URLSearchParams({
+    page: params.get('page') ?? '1',
+    limit: '12',
+  });
+  for (const field of ['q', 'category'])
+    if (params.get(field)) query.set(field, params.get(field));
+  if (status !== 'all') query.set('status', status);
+  const { data, error, loading, retry } = useApiResource(`/equipment?${query}`);
+
+  function search(event) {
+    event.preventDefault();
+    const next = new URLSearchParams();
+    for (const [field, value] of new FormData(event.currentTarget)) {
+      if (value.trim()) next.set(field, value.trim());
+    }
+    setParams(next);
+  }
+  function changePage(page) {
+    const next = new URLSearchParams(params);
+    next.set('page', String(page));
+    setParams(next);
+  }
+
+  return (
+    <section>
+      <h1>{admin ? 'Manage equipment' : 'Equipment'}</h1>
+      {admin && (
+        <p>
+          <Link to="/admin/equipment/new">Add equipment</Link>
+        </p>
+      )}
+      <form
+        className="catalog-filters"
+        key={params.toString()}
+        onSubmit={search}
+      >
+        <div className="form-field">
+          <label htmlFor="search">Search equipment</label>
+          <input
+            id="search"
+            name="q"
+            maxLength={80}
+            defaultValue={params.get('q') ?? ''}
+          />
+        </div>
+        <div className="form-field">
+          <label htmlFor="category">Category</label>
+          <input
+            id="category"
+            name="category"
+            maxLength={50}
+            defaultValue={params.get('category') ?? ''}
+          />
+        </div>
+        <div className="form-field">
+          <label htmlFor="status">Status</label>
+          <select id="status" name="status" defaultValue={status}>
+            <option value="all">All statuses</option>
+            <option value="available">Available</option>
+            <option value="maintenance">Maintenance</option>
+            <option value="unavailable">Unavailable</option>
+          </select>
+        </div>
+        <button type="submit">Apply filters</button>
+      </form>
+      {loading && <p role="status">Loading equipment…</p>}
+      {error && <ErrorMessage error={error} onRetry={retry} />}
+      {data && (
+        <>
+          <p role="status">{data.pagination.total} equipment items found.</p>
+          {data.data.length === 0 ? (
+            <p>No equipment matches these filters.</p>
+          ) : (
+            <div className="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Asset code</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Category</th>
+                    <th scope="col">Location</th>
+                    <th scope="col">Status</th>
+                    {admin && <th scope="col">Actions</th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.data.map((item) => (
+                    <tr key={item.id}>
+                      <td>{item.assetCode}</td>
+                      <td>
+                        <Link to={`/equipment/${item.id}`}>{item.name}</Link>
+                      </td>
+                      <td>{item.category}</td>
+                      <td>{item.location}</td>
+                      <td>
+                        <StatusBadge status={item.status} />
+                      </td>
+                      {admin && (
+                        <td>
+                          <Link
+                            to={`/admin/equipment/${item.id}/edit`}
+                            aria-label={`Edit ${item.name}`}
+                          >
+                            Edit
+                          </Link>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          <Pagination pagination={data.pagination} onPageChange={changePage} />
+        </>
+      )}
+    </section>
+  );
+}

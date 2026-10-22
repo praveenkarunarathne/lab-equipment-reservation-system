@@ -5,6 +5,10 @@ import AdminRoute from '../auth/AdminRoute.jsx';
 import AppLayout from '../components/AppLayout.jsx';
 import LoginPage from '../pages/LoginPage.jsx';
 import RegisterPage from '../pages/RegisterPage.jsx';
+import EquipmentListPage from '../pages/EquipmentListPage.jsx';
+import EquipmentDetailPage from '../pages/EquipmentDetailPage.jsx';
+import AdminEquipmentPage from '../pages/admin/AdminEquipmentPage.jsx';
+import AdminEquipmentFormPage from '../pages/admin/AdminEquipmentFormPage.jsx';
 
 export default function AppRoutes() {
   const { user, loading, error, retry } = useAuth();
@@ -38,15 +42,8 @@ export default function AppRoutes() {
       <Route path="/register" element={<RegisterPage />} />
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
-          <Route
-            path="/equipment"
-            element={
-              <section>
-                <h1>Equipment</h1>
-                <p>Welcome, {user?.name}.</p>
-              </section>
-            }
-          />
+          <Route path="/equipment" element={<EquipmentListPage />} />
+          <Route path="/equipment/:id" element={<EquipmentDetailPage />} />
           <Route element={<AdminRoute />}>
             <Route
               path="/admin"
@@ -54,8 +51,18 @@ export default function AppRoutes() {
                 <section>
                   <h1>Administration</h1>
                   <p>Welcome, {user?.name}.</p>
+                  <Link to="/admin/equipment">Manage equipment</Link>
                 </section>
               }
+            />
+            <Route path="/admin/equipment" element={<AdminEquipmentPage />} />
+            <Route
+              path="/admin/equipment/new"
+              element={<AdminEquipmentFormPage />}
+            />
+            <Route
+              path="/admin/equipment/:id/edit"
+              element={<AdminEquipmentFormPage />}
             />
           </Route>
         </Route>

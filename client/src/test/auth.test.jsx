@@ -48,6 +48,11 @@ beforeEach(() => {
         : failure(401, 'AUTH_REQUIRED', 'Please sign in.');
     if (path === '/auth/csrf')
       return Response.json({ data: { csrfToken: state.token } });
+    if (path.startsWith('/equipment?'))
+      return Response.json({
+        data: [],
+        pagination: { page: 1, limit: 12, total: 0, totalPages: 0 },
+      });
     if (path === '/probe') {
       state.user = null;
       return failure(401, 'AUTH_REQUIRED', 'Please sign in.');

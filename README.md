@@ -1,7 +1,7 @@
 # Lab Equipment Reservation System
 
 MERN application for reserving laboratory equipment. The project currently includes
-the monorepo setup, API foundation, authentication, equipment catalog, and lifecycle from commits 01–05 of the plan in
+the monorepo setup, API foundation, authentication, equipment catalog, lifecycle, and booking engine from commits 01–06 of the plan in
 [IMPLEMENTATION_SPEC.md](IMPLEMENTATION_SPEC.md).
 
 ## Prerequisites
@@ -92,7 +92,9 @@ CSRF rotation, and logout. Run either suite with `bun run test:server` or
 `bun run test:client`.
 Equipment tests also cover search, pagination, validation, admin permissions,
 metadata editing, lifecycle cancellation and rollback, concurrent writes, and the
-partial unique reservation index. Server suites run
+partial unique reservation index. Booking tests cover timezone and time boundaries,
+concurrent bookings, transaction retries and rollback, and races with lifecycle
+operations. Server suites run
 sequentially to avoid competing MongoDB binary downloads on a fresh checkout.
 
 `bun run build` produces `client/dist`. `bun run start` starts Express without
@@ -111,8 +113,8 @@ watch mode; production SPA serving and deployment are scheduled for commit 10.
 - `server/src/modules`: auth and equipment modules, User model/DTO, and Reservation schema.
 - `server/test`: configuration, API middleware, authentication, and authorization tests.
 
-Only dependencies used by the current increments are installed. Reservation
-workflows, faults, and dashboard features follow in later commits.
+Only dependencies used by the current increments are installed. Booking UI,
+reservation management, faults, and dashboard features follow in later commits.
 
 ## API foundation
 
@@ -187,8 +189,7 @@ The API supports:
 
 Startup creates equipment indexes and the Reservation schema's indexes, including
 the unique active `(equipmentId, startAt)` index. Cancelled reservations can share
-a slot, so cancellation history does not prevent rebooking. Booking APIs and
-schedule validation are not exposed yet.
+a slot, so cancellation history does not prevent rebooking.
 
 ## Equipment lifecycle
 
@@ -217,8 +218,43 @@ the original documents and references for historical records.
 
 If any write fails, the entire equipment-and-reservation transaction rolls back.
 The transaction helper retries transient conflicts, obtaining fresh domain time
-on each attempt. The forthcoming booking engine must write the same equipment
-guard to coordinate with lifecycle operations. No booking endpoint is included yet.
+on each attempt. The booking engine writes the same equipment guard to coordinate
+with lifecycle operations.
+
+## Availability and booking
+
+- `GET /api/v1/equipment/:id/availability`: authenticated read returning
+  `{ data: { equipmentId, bookable, timezone, slotDurationMinutes, horizonDays, slots } }`.
+  Each slot contains UTC ISO `startAt`/`endAt` and a display-only Colombo label.
+  Maintenance/unavailable equipment returns `bookable: false` and no slots;
+  archived or missing equipment returns `404`. Available equipment can have zero
+  free slots while remaining operationally bookable.
+- `POST /api/v1/reservations`: student and CSRF required; strict body
+  `{ equipmentId, startAt }`. Use a returned slot's `startAt`. The server validates
+  the request independently and returns `201` with a reservation DTO.
+
+Bookings are one hour. Allowed starts are Monday–Friday at 08:30, 09:30, 10:30,
+11:30, 12:30, 13:30, 14:30, and 15:30 in `Asia/Colombo`. A start must be strictly
+after server time and at most 14 rolling days ahead. ISO strings must carry `Z`
+or an explicit offset and represent an exact slot; invalid calendar dates, missing
+offsets, and nonzero fractional seconds are rejected. Server time and schedule
+rules cannot be supplied by the client.
+
+Availability includes at most 80 legal starts before excluding elapsed and active
+bookings. Cancelled reservations do not occupy a slot. Availability is advisory:
+another student or a lifecycle operation may change the result before booking.
+
+Reservation creation transactionally increments the equipment guard only if the
+item is non-archived and available, then revalidates time and inserts a student-owned
+record using the same connection/session. A failed insert or validation rolls back
+the guard. Duplicate active slots return `409 RESERVATION_CONFLICT`; equipment that
+is missing, archived, or out of service at the authoritative write returns
+`409 EQUIPMENT_NOT_AVAILABLE`. Illegal times return `400 VALIDATION_ERROR`.
+
+The reservation DTO derives `endAt` and temporal `phase` (`upcoming`, `inProgress`,
+`past`); these are not stored. Booking selection, reservation lists, and student/admin
+cancellation controls are scheduled for commit 07; the current React interface does
+not include a booking form yet.
 
 ## Seed an administrator
 

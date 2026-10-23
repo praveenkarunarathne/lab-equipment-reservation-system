@@ -12,8 +12,10 @@
     "db:check": "node --env-file-if-exists=../.env src/db/checkTransaction.js"
   },
   "dependencies": {
+    "@date-fns/tz": "1.5.0",
     "argon2": "0.45.1",
     "connect-mongo": "6.0.0",
+    "date-fns": "4.4.0",
     "express": "5.2.1",
     "express-rate-limit": "8.7.0",
     "express-session": "1.19.0",

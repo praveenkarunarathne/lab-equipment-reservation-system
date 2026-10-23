@@ -6,6 +6,9 @@ export function createEquipmentController(service) {
     async detail(req, res) {
       res.json({ data: await service.detail(req.validated.params.id) });
     },
+    async availability(req, res) {
+      res.json({ data: await service.availability(req.validated.params.id) });
+    },
     async create(req, res) {
       res
         .status(201)

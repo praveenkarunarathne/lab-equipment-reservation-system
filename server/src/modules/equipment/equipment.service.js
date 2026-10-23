@@ -3,7 +3,10 @@ import { equipmentDto } from './equipment.dto.js';
 import { AppError } from '../../shared/AppError.js';
 import { withTransaction } from '../../shared/asyncTransaction.js';
 import { clock } from '../../shared/clock.js';
-import { cancelFutureReservations } from '../reservations/reservation.service.js';
+import {
+  cancelFutureReservations,
+  equipmentAvailability,
+} from '../reservations/reservation.service.js';
 
 function requireAdministrator(actor) {
   if (actor?.role !== 'admin')
@@ -59,6 +62,12 @@ export function createEquipmentService(connection) {
       return requireEquipment(
         await Equipment.findOne({ _id: id, archivedAt: null }).lean(),
       );
+    },
+    async availability(id) {
+      const equipment = requireEquipment(
+        await Equipment.findOne({ _id: id, archivedAt: null }).lean(),
+      );
+      return equipmentAvailability(connection, equipment);
     },
     async create(input, actor) {
       return equipmentDto(

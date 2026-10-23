@@ -19,6 +19,11 @@ export function createEquipmentRouter(connection) {
   router.use(requireAuth);
   router.get('/', validate({ query: equipmentQuerySchema }), controller.list);
   router.get(
+    '/:id/availability',
+    validate({ params: equipmentParamsSchema }),
+    controller.availability,
+  );
+  router.get(
     '/:id',
     validate({ params: equipmentParamsSchema }),
     controller.detail,

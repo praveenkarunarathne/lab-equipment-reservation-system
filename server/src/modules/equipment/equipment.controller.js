@@ -16,5 +16,18 @@ export function createEquipmentController(service) {
         data: await service.update(req.validated.params.id, req.validated.body),
       });
     },
+    async changeStatus(req, res) {
+      res.json({
+        data: await service.changeStatus(
+          req.validated.params.id,
+          req.validated.body,
+          req.actor,
+        ),
+      });
+    },
+    async archive(req, res) {
+      await service.archive(req.validated.params.id, req.actor);
+      res.sendStatus(204);
+    },
   };
 }

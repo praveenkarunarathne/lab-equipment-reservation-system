@@ -1,7 +1,7 @@
 # Lab Equipment Reservation System
 
 MERN application for reserving laboratory equipment. The project currently includes
-the monorepo setup, API foundation, authentication, and equipment catalog from commits 01–04 of the plan in
+the monorepo setup, API foundation, authentication, equipment catalog, and lifecycle from commits 01–05 of the plan in
 [IMPLEMENTATION_SPEC.md](IMPLEMENTATION_SPEC.md).
 
 ## Prerequisites
@@ -91,7 +91,8 @@ React Testing Library tests cover forms, session bootstrapping, route guards,
 CSRF rotation, and logout. Run either suite with `bun run test:server` or
 `bun run test:client`.
 Equipment tests also cover search, pagination, validation, admin permissions,
-metadata editing, and the partial unique reservation index. Server suites run
+metadata editing, lifecycle cancellation and rollback, concurrent writes, and the
+partial unique reservation index. Server suites run
 sequentially to avoid competing MongoDB binary downloads on a fresh checkout.
 
 `bun run build` produces `client/dist`. `bun run start` starts Express without
@@ -110,8 +111,8 @@ watch mode; production SPA serving and deployment are scheduled for commit 10.
 - `server/src/modules`: auth and equipment modules, User model/DTO, and Reservation schema.
 - `server/test`: configuration, API middleware, authentication, and authorization tests.
 
-Only dependencies used by the current increments are installed. Equipment lifecycle,
-reservation workflows, faults, and dashboard features follow in later commits.
+Only dependencies used by the current increments are installed. Reservation
+workflows, faults, and dashboard features follow in later commits.
 
 ## API foundation
 
@@ -187,8 +188,37 @@ The API supports:
 Startup creates equipment indexes and the Reservation schema's indexes, including
 the unique active `(equipmentId, startAt)` index. Cancelled reservations can share
 a slot, so cancellation history does not prevent rebooking. Booking APIs and
-schedule validation are not exposed yet. Equipment status/archive workflows are
-scheduled for commit 05.
+schedule validation are not exposed yet.
+
+## Equipment lifecycle
+
+Open an equipment detail page as an administrator to change its operational
+status or archive it. Maintenance and unavailable states require a reason of
+1–500 characters after trimming. Confirmation dialogs explain cancellation before
+any mutation is sent; the form shows the number of reservations cancelled after
+a successful status change and refetches the current equipment.
+
+- `PATCH /api/v1/equipment/:id/status`: admin and CSRF required; strict body
+  `{ status, reason? }`. Returns
+  `{ data: { equipment, cancelledReservationCount } }`. Available equipment stores
+  a null reason. Exact repeated status/reason requests leave audit data unchanged.
+- `DELETE /api/v1/equipment/:id`: admin and CSRF required, no body needed. Soft
+  archives the item and returns `204`. Repeating the archive of an existing item
+  returns `204` without changing its original audit data. Unknown IDs return `404`.
+
+Lifecycle writes increment the equipment's reservation guard within a MongoDB
+transaction. Maintenance, unavailable, and archive operations cancel only active
+reservations with `startAt > serverNow`, using the same connection and session.
+The cancellation records the admin, timestamp, and matching equipment reason.
+Started and historical slots, other equipment, and already-cancelled reservations
+remain untouched. Returning equipment to available never restores cancellations.
+Archive records its actor/timestamp, makes equipment unavailable, and preserves
+the original documents and references for historical records.
+
+If any write fails, the entire equipment-and-reservation transaction rolls back.
+The transaction helper retries transient conflicts, obtaining fresh domain time
+on each attempt. The forthcoming booking engine must write the same equipment
+guard to coordinate with lifecycle operations. No booking endpoint is included yet.
 
 ## Seed an administrator
 

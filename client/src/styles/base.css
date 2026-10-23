@@ -139,3 +139,30 @@ dd {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+
+.lifecycle-controls {
+  margin-top: 2rem;
+  border-top: 1px solid #d6dce5;
+  padding-top: 1rem;
+  max-width: 35rem;
+}
+.danger {
+  background: #a21d2f;
+}
+dialog {
+  max-width: 30rem;
+  max-height: 85vh;
+  overflow: auto;
+  border: 1px solid #8795a9;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+}
+dialog::backdrop {
+  background: rgb(0 0 0 / 45%);
+}
+.dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}

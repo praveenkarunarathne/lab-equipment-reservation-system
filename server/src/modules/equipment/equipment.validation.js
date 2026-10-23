@@ -22,6 +22,21 @@ export const equipmentUpdateSchema = equipmentCreateSchema
     'Provide at least one metadata field.',
   );
 export const equipmentParamsSchema = z.strictObject({ id: objectIdSchema });
+export const equipmentStatusSchema = z
+  .strictObject({
+    status: z.enum(EQUIPMENT_STATUSES),
+    reason: z.string().trim().max(500).optional(),
+  })
+  .superRefine((input, context) => {
+    if (input.status !== 'available' && !input.reason) {
+      context.addIssue({
+        code: 'custom',
+        path: ['reason'],
+        message:
+          'A reason is required for maintenance or unavailable equipment.',
+      });
+    }
+  });
 export const equipmentQuerySchema = z.strictObject({
   page: z.coerce.number().int().min(1).max(1_000_000).default(1),
   limit: z.coerce.number().int().min(1).max(50).default(12),

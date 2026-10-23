@@ -8,6 +8,7 @@ import {
   equipmentUpdateSchema,
   equipmentParamsSchema,
   equipmentQuerySchema,
+  equipmentStatusSchema,
 } from './equipment.validation.js';
 
 export function createEquipmentRouter(connection) {
@@ -27,6 +28,18 @@ export function createEquipmentRouter(connection) {
     requireRole('admin'),
     validate({ body: equipmentCreateSchema }),
     controller.create,
+  );
+  router.patch(
+    '/:id/status',
+    requireRole('admin'),
+    validate({ params: equipmentParamsSchema, body: equipmentStatusSchema }),
+    controller.changeStatus,
+  );
+  router.delete(
+    '/:id',
+    requireRole('admin'),
+    validate({ params: equipmentParamsSchema }),
+    controller.archive,
   );
   router.patch(
     '/:id',

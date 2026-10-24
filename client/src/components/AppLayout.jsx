@@ -22,6 +22,11 @@ export default function AppLayout() {
       <header>
         <nav aria-label="Main navigation">
           <Link to="/equipment">Equipment</Link>
+          <Link
+            to={user.role === 'admin' ? '/admin/reservations' : '/reservations'}
+          >
+            {user.role === 'admin' ? 'Manage reservations' : 'My reservations'}
+          </Link>
           {user.role === 'admin' && <Link to="/admin">Administration</Link>}
           {user.role === 'admin' && (
             <Link to="/admin/equipment">Manage equipment</Link>

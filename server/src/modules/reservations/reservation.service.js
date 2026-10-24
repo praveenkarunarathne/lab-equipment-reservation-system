@@ -48,7 +48,85 @@ export async function equipmentAvailability(connection, equipment) {
 export function createReservationService(connection) {
   const Equipment = getEquipmentModel(connection);
   const Reservation = getReservationModel(connection);
+  function summaries(query, admin) {
+    query.populate('equipmentId', 'assetCode name location status archivedAt');
+    if (admin) query.populate('studentId', 'name email');
+    return query.lean();
+  }
+  function dto(record, serverNow, admin) {
+    return reservationDto(
+      record,
+      record.equipmentId,
+      serverNow,
+      admin ? record.studentId : undefined,
+    );
+  }
   return {
+    async list({ view, page, limit, equipmentId, studentId }, actor) {
+      const serverNow = clock.now();
+      const admin = actor.role === 'admin';
+      const filter = {};
+      if (!admin) filter.studentId = actor.userId;
+      else if (studentId) filter.studentId = studentId;
+      if (equipmentId) filter.equipmentId = equipmentId;
+      if (view === 'upcoming') {
+        filter.status = 'active';
+        filter.startAt = { $gt: serverNow };
+      } else if (view === 'history') {
+        filter.$or = [
+          { status: 'cancelled' },
+          { startAt: { $lte: serverNow } },
+        ];
+      }
+      const direction = view === 'upcoming' ? 1 : -1;
+      const [records, total] = await Promise.all([
+        summaries(
+          Reservation.find(filter)
+            .sort({ startAt: direction, _id: direction })
+            .skip((page - 1) * limit)
+            .limit(limit),
+          admin,
+        ),
+        Reservation.countDocuments(filter),
+      ]);
+      return {
+        data: records.map((record) => dto(record, serverNow, admin)),
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
+    },
+    async cancel(id, actor) {
+      const admin = actor.role === 'admin';
+      const owned = { _id: id, ...(!admin && { studentId: actor.userId }) };
+      const serverNow = clock.now();
+      // The conditional write preserves the first cancellation's audit under races.
+      const updated = await Reservation.findOneAndUpdate(
+        { ...owned, status: 'active', startAt: { $gt: serverNow } },
+        {
+          $set: {
+            status: 'cancelled',
+            cancelledAt: serverNow,
+            cancelledBy: actor.userId,
+            cancellationReason: admin ? 'admin_cancelled' : 'student_cancelled',
+          },
+        },
+        { returnDocument: 'after', runValidators: true },
+      );
+      const record = await summaries(Reservation.findOne(owned), admin);
+      if (!record)
+        throw new AppError(404, 'RESOURCE_NOT_FOUND', 'Reservation not found.');
+      if (!updated && record.status === 'active')
+        throw new AppError(
+          409,
+          'RESERVATION_ALREADY_STARTED',
+          'The reservation has already started and cannot be cancelled.',
+        );
+      return dto(record, serverNow, admin);
+    },
     async create({ equipmentId, startAt }, actor) {
       if (actor?.role !== 'student')
         throw new AppError(

@@ -140,7 +140,8 @@ dd {
   overflow-wrap: anywhere;
 }
 
-.lifecycle-controls {
+.lifecycle-controls,
+.booking-form {
   margin-top: 2rem;
   border-top: 1px solid #d6dce5;
   padding-top: 1rem;

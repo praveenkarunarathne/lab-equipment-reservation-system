@@ -5,6 +5,7 @@ import { useApiResource } from '../api/useApiResource.js';
 import StatusBadge from '../components/StatusBadge.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
 import EquipmentLifecycleControls from '../components/EquipmentLifecycleControls.jsx';
+import BookingForm from '../components/BookingForm.jsx';
 
 export default function EquipmentDetailPage() {
   const { id } = useParams();
@@ -38,6 +39,9 @@ export default function EquipmentDetailPage() {
           <p className="equipment-description">
             {data.description || 'No description provided.'}
           </p>
+          {user.role === 'student' && (
+            <BookingForm key={data.id} equipmentId={data.id} />
+          )}
           {user.role === 'admin' && (
             <p>
               <Link to={`/admin/equipment/${data.id}/edit`}>

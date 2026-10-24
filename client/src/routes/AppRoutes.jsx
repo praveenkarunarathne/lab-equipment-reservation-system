@@ -9,6 +9,7 @@ import EquipmentListPage from '../pages/EquipmentListPage.jsx';
 import EquipmentDetailPage from '../pages/EquipmentDetailPage.jsx';
 import AdminEquipmentPage from '../pages/admin/AdminEquipmentPage.jsx';
 import AdminEquipmentFormPage from '../pages/admin/AdminEquipmentFormPage.jsx';
+import ReservationsPage from '../pages/ReservationsPage.jsx';
 
 export default function AppRoutes() {
   const { user, loading, error, retry } = useAuth();
@@ -44,7 +45,12 @@ export default function AppRoutes() {
         <Route element={<AppLayout />}>
           <Route path="/equipment" element={<EquipmentListPage />} />
           <Route path="/equipment/:id" element={<EquipmentDetailPage />} />
+          <Route path="/reservations" element={<ReservationsPage />} />
           <Route element={<AdminRoute />}>
+            <Route
+              path="/admin/reservations"
+              element={<ReservationsPage admin />}
+            />
             <Route
               path="/admin"
               element={

@@ -94,7 +94,9 @@ Equipment tests also cover search, pagination, validation, admin permissions,
 metadata editing, lifecycle cancellation and rollback, concurrent writes, and the
 partial unique reservation index. Booking tests cover timezone and time boundaries,
 concurrent bookings, transaction retries and rollback, and races with lifecycle
-operations. Server suites run
+operations. Reservation management tests cover ownership, list filters and phases,
+archived history, cancellation cutoffs and concurrent cancellation, and React
+booking/cancellation interactions. Server suites run
 sequentially to avoid competing MongoDB binary downloads on a fresh checkout.
 
 `bun run build` produces `client/dist`. `bun run start` starts Express without
@@ -102,7 +104,7 @@ watch mode; production SPA serving and deployment are scheduled for commit 10.
 
 ## Structure and scope
 
-- `client/src`: React authentication and equipment pages, session context, route guards, and styles.
+- `client/src`: React authentication, equipment and reservation pages, session context, route guards, and styles.
 - `server/src/config`: environment validation.
 - `server/src/db`: connection, local replica-set initialization, transaction check.
 - `server/src/middleware`: validation, request IDs, security, limits, sessions, CSRF, errors.
@@ -110,11 +112,11 @@ watch mode; production SPA serving and deployment are scheduled for commit 10.
 - `server/src/shared`: safe logger, application errors, ObjectId validation.
 - `server/src/app.js`: Express application factory.
 - `server/src/server.js`: startup and graceful shutdown.
-- `server/src/modules`: auth and equipment modules, User model/DTO, and Reservation schema.
+- `server/src/modules`: authentication, equipment and reservation APIs, models, and DTOs.
 - `server/test`: configuration, API middleware, authentication, and authorization tests.
 
-Only dependencies used by the current increments are installed. Booking UI,
-reservation management, faults, and dashboard features follow in later commits.
+Only dependencies used by the current increments are installed. Fault reporting
+and dashboard features follow in later commits.
 
 ## API foundation
 
@@ -252,9 +254,38 @@ is missing, archived, or out of service at the authoritative write returns
 `409 EQUIPMENT_NOT_AVAILABLE`. Illegal times return `400 VALIDATION_ERROR`.
 
 The reservation DTO derives `endAt` and temporal `phase` (`upcoming`, `inProgress`,
-`past`); these are not stored. Booking selection, reservation lists, and student/admin
-cancellation controls are scheduled for commit 07; the current React interface does
-not include a booking form yet.
+`past`); these are not stored.
+
+## Reservation management
+
+Students can book from an equipment detail page using only the slots returned by
+the server. A successful booking refreshes availability and links to
+`/reservations`. A conflict clears the stale selection and refreshes the slots;
+booking again requires an explicit selection and submission.
+
+- `GET /api/v1/reservations/mine`: student-only, returns the current student's
+  reservations and omits redundant student details.
+- `GET /api/v1/reservations`: admin-only, includes safe student name/email
+  summaries and optional `equipmentId` and `studentId` filters.
+- Both lists accept `view=upcoming|history|all` (default `upcoming`), `page`
+  (default 1), and `limit` (default 12, maximum 50). Upcoming means active with
+  `startAt > serverNow`, sorted ascending. History includes cancelled records or
+  slots that have started, sorted descending. All sorts descending. Ties use ID
+  for stable pagination. Lists retain archived equipment summaries.
+- `PATCH /api/v1/reservations/:id/cancel`: student owner or admin, CSRF required,
+  no body or an empty JSON object. An atomic conditional update cancels active
+  slots only when `startAt > serverNow`, recording `student_cancelled` or
+  `admin_cancelled` and the actor/time. Non-owned student IDs and missing IDs
+  consistently return `404 RESOURCE_NOT_FOUND`. Started active slots return
+  `409 RESERVATION_ALREADY_STARTED`. Repeated authorized cancellation returns the
+  current cancelled DTO and preserves the original audit, including lifecycle
+  cancellations. A cancelled slot can be rebooked.
+
+Students use `/reservations`; admins use `/admin/reservations`. Both show
+Upcoming, History and All views, pagination, cancellation confirmation and reasons,
+and times explicitly in Asia/Colombo. Admins can narrow a list using a row's
+equipment or student filter buttons. Use **Refresh reservations** to update phases
+as time passes; the server rechecks the cutoff on every cancellation.
 
 ## Seed an administrator
 

@@ -1,6 +1,6 @@
 import { SLOT_DURATION_MS } from '../../config/constants.js';
 
-export function reservationDto(reservation, equipment, serverNow) {
+export function reservationDto(reservation, equipment, serverNow, student) {
   const endAt = new Date(reservation.startAt.getTime() + SLOT_DURATION_MS);
   const phase =
     reservation.startAt > serverNow
@@ -24,5 +24,12 @@ export function reservationDto(reservation, equipment, serverNow) {
       status: equipment.status,
       archived: Boolean(equipment.archivedAt),
     },
+    ...(student && {
+      student: {
+        id: student._id.toString(),
+        name: student.name,
+        email: student.email,
+      },
+    }),
   };
 }

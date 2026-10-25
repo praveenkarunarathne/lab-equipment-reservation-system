@@ -23,6 +23,15 @@ export default function AppLayout() {
         <nav aria-label="Main navigation">
           <Link to="/equipment">Equipment</Link>
           <Link
+            to={
+              user.role === 'admin' ? '/admin/fault-reports' : '/fault-reports'
+            }
+          >
+            {user.role === 'admin'
+              ? 'Manage fault reports'
+              : 'My fault reports'}
+          </Link>
+          <Link
             to={user.role === 'admin' ? '/admin/reservations' : '/reservations'}
           >
             {user.role === 'admin' ? 'Manage reservations' : 'My reservations'}

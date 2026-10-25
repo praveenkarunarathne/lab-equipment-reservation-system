@@ -1,11 +1,13 @@
 import { getUserModel } from '../modules/users/user.model.js';
 import { getEquipmentModel } from '../modules/equipment/equipment.model.js';
 import { getReservationModel } from '../modules/reservations/reservation.model.js';
+import { getFaultReportModel } from '../modules/faultReports/faultReport.model.js';
 
 export async function ensureCriticalIndexes(connection) {
   getUserModel(connection);
   getEquipmentModel(connection);
   getReservationModel(connection);
+  getFaultReportModel(connection);
   for (const model of Object.values(connection.models)) {
     await model.createIndexes();
   }

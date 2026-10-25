@@ -1,4 +1,11 @@
 export const EQUIPMENT_STATUSES = ['available', 'maintenance', 'unavailable'];
+export const FAULT_CATEGORIES = [
+  'malfunction',
+  'damage',
+  'calibration',
+  'safety',
+  'other',
+];
 export const BUSINESS_TIMEZONE = 'Asia/Colombo';
 export const BOOKING_WEEKDAYS = [1, 2, 3, 4, 5];
 export const SLOT_START_TIMES = [

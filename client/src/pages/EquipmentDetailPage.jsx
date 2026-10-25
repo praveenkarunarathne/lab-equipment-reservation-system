@@ -40,6 +40,13 @@ export default function EquipmentDetailPage() {
             {data.description || 'No description provided.'}
           </p>
           {user.role === 'student' && (
+            <p>
+              <Link to={`/fault-reports/new?equipmentId=${data.id}`}>
+                Report a fault
+              </Link>
+            </p>
+          )}
+          {user.role === 'student' && (
             <BookingForm key={data.id} equipmentId={data.id} />
           )}
           {user.role === 'admin' && (

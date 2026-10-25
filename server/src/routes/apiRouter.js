@@ -4,6 +4,7 @@ import { csrfProtection, issueCsrfToken } from '../middleware/csrf.js';
 import { createAuthRouter } from '../modules/auth/auth.routes.js';
 import { createEquipmentRouter } from '../modules/equipment/equipment.routes.js';
 import { createReservationRouter } from '../modules/reservations/reservation.routes.js';
+import { createFaultReportRouter } from '../modules/faultReports/faultReport.routes.js';
 
 export function createApiRouter({
   env,
@@ -31,6 +32,7 @@ export function createApiRouter({
   router.use('/auth', createAuthRouter(connection, env));
   router.use('/equipment', createEquipmentRouter(connection));
   router.use('/reservations', createReservationRouter(connection));
+  router.use('/fault-reports', createFaultReportRouter(connection));
   router.use(routes);
   return router;
 }

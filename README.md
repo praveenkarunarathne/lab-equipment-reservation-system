@@ -96,7 +96,9 @@ partial unique reservation index. Booking tests cover timezone and time boundari
 concurrent bookings, transaction retries and rollback, and races with lifecycle
 operations. Reservation management tests cover ownership, list filters and phases,
 archived history, cancellation cutoffs and concurrent cancellation, and React
-booking/cancellation interactions. Server suites run
+booking/cancellation interactions. Fault tests cover strict text validation,
+ownership, archived history, resolution audits and concurrency, safe text rendering,
+and preservation of equipment and reservation state. Server suites run
 sequentially to avoid competing MongoDB binary downloads on a fresh checkout.
 
 `bun run build` produces `client/dist`. `bun run start` starts Express without
@@ -104,7 +106,7 @@ watch mode; production SPA serving and deployment are scheduled for commit 10.
 
 ## Structure and scope
 
-- `client/src`: React authentication, equipment and reservation pages, session context, route guards, and styles.
+- `client/src`: React authentication, equipment, reservation and fault report pages, session context, route guards, and styles.
 - `server/src/config`: environment validation.
 - `server/src/db`: connection, local replica-set initialization, transaction check.
 - `server/src/middleware`: validation, request IDs, security, limits, sessions, CSRF, errors.
@@ -112,11 +114,11 @@ watch mode; production SPA serving and deployment are scheduled for commit 10.
 - `server/src/shared`: safe logger, application errors, ObjectId validation.
 - `server/src/app.js`: Express application factory.
 - `server/src/server.js`: startup and graceful shutdown.
-- `server/src/modules`: authentication, equipment and reservation APIs, models, and DTOs.
+- `server/src/modules`: authentication, equipment, reservation and fault report APIs, models, and DTOs.
 - `server/test`: configuration, API middleware, authentication, and authorization tests.
 
-Only dependencies used by the current increments are installed. Fault reporting
-and dashboard features follow in later commits.
+Only dependencies used by the current increments are installed. The admin
+dashboard follows in commit 09.
 
 ## API foundation
 
@@ -286,6 +288,42 @@ Upcoming, History and All views, pagination, cancellation confirmation and reaso
 and times explicitly in Asia/Colombo. Admins can narrow a list using a row's
 equipment or student filter buttons. Use **Refresh reservations** to update phases
 as time passes; the server rechecks the cutoff on every cancellation.
+
+## Fault reporting and resolution
+
+Students can select **Report a fault** on any current equipment detail page,
+including maintenance or unavailable equipment. The form accepts text only and
+shows the instruction to stop using suspected unsafe equipment and inform
+laboratory staff; a web report does not replace physical safety procedures.
+`/fault-reports/new` links to the full catalog when equipment has not been chosen.
+
+- `POST /api/v1/fault-reports`: student and CSRF required. Strict body
+  `{ equipmentId, category, title, description }`. Categories are `malfunction`,
+  `damage`, `calibration`, `safety`, and `other`. Title is trimmed to 5–100
+  characters; description is trimmed to 10–2000. Missing or archived equipment
+  returns `404 RESOURCE_NOT_FOUND`. The reporter comes from the session.
+- `GET /api/v1/fault-reports/mine`: student-only, restricted to the actor's reports.
+- `GET /api/v1/fault-reports`: admin-only, with optional `equipmentId` and
+  `reportedBy` filters. Both lists support optional `status=open|resolved`,
+  `page` (default 1), and `limit` (default 12, maximum 50), sorted newest first
+  with ID as a tie-breaker.
+- `GET /api/v1/fault-reports/:id`: student owner or admin. Missing and non-owned
+  student IDs consistently return `404 RESOURCE_NOT_FOUND`. DTOs include equipment
+  and resolver summaries; admin responses also include a reporter summary. Password
+  hashes and internal model fields are omitted. Archived equipment remains
+  readable; missing legacy equipment references return a null equipment summary.
+- `PATCH /api/v1/fault-reports/:id/resolve`: admin and CSRF required. Strict body
+  `{ resolutionNote }`, trimmed to 5–1000 characters. An atomic conditional update
+  records the note, admin and time once. Subsequent or concurrent losing attempts
+  return `409 FAULT_ALREADY_RESOLVED`, preserving the winning audit. Reports cannot
+  be reopened.
+
+Students use `/fault-reports` for their report history. Admins use
+`/admin/fault-reports` to filter reports, open their details and resolve them.
+Existing reports remain resolvable after equipment archive. Report and resolution
+text is rendered as plain text. Neither creation nor resolution changes equipment
+status or reservations; admins use the separate equipment lifecycle controls for
+those actions.
 
 ## Seed an administrator
 

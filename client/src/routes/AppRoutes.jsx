@@ -10,6 +10,9 @@ import EquipmentDetailPage from '../pages/EquipmentDetailPage.jsx';
 import AdminEquipmentPage from '../pages/admin/AdminEquipmentPage.jsx';
 import AdminEquipmentFormPage from '../pages/admin/AdminEquipmentFormPage.jsx';
 import ReservationsPage from '../pages/ReservationsPage.jsx';
+import FaultReportsPage from '../pages/FaultReportsPage.jsx';
+import FaultReportNewPage from '../pages/FaultReportNewPage.jsx';
+import FaultReportDetailPage from '../pages/FaultReportDetailPage.jsx';
 
 export default function AppRoutes() {
   const { user, loading, error, retry } = useAuth();
@@ -46,7 +49,17 @@ export default function AppRoutes() {
           <Route path="/equipment" element={<EquipmentListPage />} />
           <Route path="/equipment/:id" element={<EquipmentDetailPage />} />
           <Route path="/reservations" element={<ReservationsPage />} />
+          <Route path="/fault-reports" element={<FaultReportsPage />} />
+          <Route path="/fault-reports/new" element={<FaultReportNewPage />} />
+          <Route
+            path="/fault-reports/:id"
+            element={<FaultReportDetailPage />}
+          />
           <Route element={<AdminRoute />}>
+            <Route
+              path="/admin/fault-reports"
+              element={<FaultReportsPage admin />}
+            />
             <Route
               path="/admin/reservations"
               element={<ReservationsPage admin />}

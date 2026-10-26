@@ -13,6 +13,7 @@ import ReservationsPage from '../pages/ReservationsPage.jsx';
 import FaultReportsPage from '../pages/FaultReportsPage.jsx';
 import FaultReportNewPage from '../pages/FaultReportNewPage.jsx';
 import FaultReportDetailPage from '../pages/FaultReportDetailPage.jsx';
+import AdminDashboardPage from '../pages/admin/AdminDashboardPage.jsx';
 
 export default function AppRoutes() {
   const { user, loading, error, retry } = useAuth();
@@ -64,16 +65,7 @@ export default function AppRoutes() {
               path="/admin/reservations"
               element={<ReservationsPage admin />}
             />
-            <Route
-              path="/admin"
-              element={
-                <section>
-                  <h1>Administration</h1>
-                  <p>Welcome, {user?.name}.</p>
-                  <Link to="/admin/equipment">Manage equipment</Link>
-                </section>
-              }
-            />
+            <Route path="/admin" element={<AdminDashboardPage />} />
             <Route path="/admin/equipment" element={<AdminEquipmentPage />} />
             <Route
               path="/admin/equipment/new"

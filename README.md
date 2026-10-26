@@ -98,7 +98,9 @@ operations. Reservation management tests cover ownership, list filters and phase
 archived history, cancellation cutoffs and concurrent cancellation, and React
 booking/cancellation interactions. Fault tests cover strict text validation,
 ownership, archived history, resolution audits and concurrency, safe text rendering,
-and preservation of equipment and reservation state. Server suites run
+and preservation of equipment and reservation state. Dashboard tests cover role
+restrictions, empty data, metric counts, exact time boundaries, archive exclusion,
+ranking and refresh, plus card links and loading/error states. Server suites run
 sequentially to avoid competing MongoDB binary downloads on a fresh checkout.
 
 `bun run build` produces `client/dist`. `bun run start` starts Express without
@@ -106,7 +108,7 @@ watch mode; production SPA serving and deployment are scheduled for commit 10.
 
 ## Structure and scope
 
-- `client/src`: React authentication, equipment, reservation and fault report pages, session context, route guards, and styles.
+- `client/src`: React authentication, equipment, reservation, fault report and admin dashboard pages, session context, route guards, and styles.
 - `server/src/config`: environment validation.
 - `server/src/db`: connection, local replica-set initialization, transaction check.
 - `server/src/middleware`: validation, request IDs, security, limits, sessions, CSRF, errors.
@@ -114,11 +116,11 @@ watch mode; production SPA serving and deployment are scheduled for commit 10.
 - `server/src/shared`: safe logger, application errors, ObjectId validation.
 - `server/src/app.js`: Express application factory.
 - `server/src/server.js`: startup and graceful shutdown.
-- `server/src/modules`: authentication, equipment, reservation and fault report APIs, models, and DTOs.
+- `server/src/modules`: authentication, equipment, reservation, fault report and dashboard APIs, models, and DTOs.
 - `server/test`: configuration, API middleware, authentication, and authorization tests.
 
-Only dependencies used by the current increments are installed. The admin
-dashboard follows in commit 09.
+All domain features through commit 09 are implemented. Final quality checks,
+CI and production deployment follow in commit 10.
 
 ## API foundation
 
@@ -164,8 +166,8 @@ The API supports:
 The browser keeps user and CSRF state in memory, and restores the session on
 reload. Authoritative `401` responses clear the UI session. Route guards provide
 navigation behavior; `requireAuth` and `requireRole` enforce API authorization.
-Students land on the available equipment catalog. Administrators can manage
-equipment from `/admin/equipment`; the dashboard follows in a later commit.
+Students land on the available equipment catalog. Administrators land on the
+dashboard at `/admin`, with links to equipment, reservation and fault management.
 
 ## Equipment catalog
 
@@ -324,6 +326,42 @@ Existing reports remain resolvable after equipment archive. Report and resolutio
 text is rendered as plain text. Neither creation nor resolution changes equipment
 status or reservations; admins use the separate equipment lifecycle controls for
 those actions.
+
+## Admin dashboard
+
+`GET /api/v1/admin/dashboard` requires an administrator session and returns:
+
+```json
+{
+  "data": {
+    "equipment": {
+      "total": 0,
+      "byStatus": { "available": 0, "maintenance": 0, "unavailable": 0 }
+    },
+    "upcomingReservationCount": 0,
+    "openFaultReportCount": 0,
+    "topEquipment": []
+  }
+}
+```
+
+- Equipment totals and status counts exclude archived equipment.
+- Upcoming reservations are active with `startAt > serverNow`; started, past and
+  cancelled reservations are excluded.
+- Open fault reports include every `open` report, including reports for archived
+  equipment that still require staff review.
+- Top 5 counts active (non-cancelled) reservation starts in
+  `[serverNow - 30 days, serverNow)`, including in-progress slots. Only current
+  non-archived equipment appears. Each entry contains `equipmentId`, `assetCode`,
+  `name` and `reservationCount`, sorted by count descending, name ascending, then
+  equipment ID for equal names. Unused equipment is omitted.
+
+The dashboard at `/admin` displays metric cards linking to the corresponding
+management filters and a simple Top 5 table. Usage measures reservations rather
+than physical use. **Refresh dashboard** fetches current data; failures show an
+error and retry instead of zero counts. Metrics are computed from the existing
+indexed collections on every request, using one server time per request. There
+are no client-supplied dates, charts, caches or background jobs.
 
 ## Seed an administrator
 

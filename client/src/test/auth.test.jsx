@@ -48,6 +48,18 @@ beforeEach(() => {
         : failure(401, 'AUTH_REQUIRED', 'Please sign in.');
     if (path === '/auth/csrf')
       return Response.json({ data: { csrfToken: state.token } });
+    if (path === '/admin/dashboard')
+      return Response.json({
+        data: {
+          equipment: {
+            total: 0,
+            byStatus: { available: 0, maintenance: 0, unavailable: 0 },
+          },
+          upcomingReservationCount: 0,
+          openFaultReportCount: 0,
+          topEquipment: [],
+        },
+      });
     if (path.startsWith('/equipment?'))
       return Response.json({
         data: [],

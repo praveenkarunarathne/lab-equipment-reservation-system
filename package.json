@@ -22,12 +22,16 @@
     "test": "bun run test:server && bun run test:client",
     "test:server": "bun run --cwd server test",
     "test:client": "bun run --cwd client test",
+    "test:e2e": "playwright test",
+    "test:e2e:server": "node server/test/e2eServer.js",
+    "db:migrate": "bun run --cwd server db:migrate",
     "db:seed-admin": "bun run --cwd server db:seed-admin",
     "db:replset-init": "bun run --cwd server db:replset-init",
     "db:check": "bun run --cwd server db:check"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "@playwright/test": "1.63.0",
     "eslint": "10.10.0",
     "eslint-plugin-react-hooks": "7.1.1",
     "eslint-plugin-react-refresh": "0.5.7",

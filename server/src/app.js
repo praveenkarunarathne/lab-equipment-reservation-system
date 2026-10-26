@@ -9,12 +9,14 @@ import { createSessionMiddleware } from './middleware/session.js';
 import { createApiRouter } from './routes/apiRouter.js';
 import { notFound } from './middleware/notFound.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { mountSpa, defaultClientDist } from './middleware/spa.js';
 
 export function createApp({
   env,
   connection = mongoose.connection,
   logger = createLogger(env.logLevel),
   routes = express.Router(),
+  clientDist = defaultClientDist,
 }) {
   const app = express();
   app.disable('x-powered-by');
@@ -62,6 +64,8 @@ export function createApp({
       sessionMiddleware: createSessionMiddleware(env, connection, logger),
     }),
   );
+  app.use('/api', notFound);
+  if (env.nodeEnv === 'production') mountSpa(app, clientDist);
   app.use(notFound);
   app.use(errorHandler);
   return app;

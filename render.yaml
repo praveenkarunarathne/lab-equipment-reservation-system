@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: lab-equipment-reservation-system
+    runtime: node
+    plan: free
+    branch: main
+    autoDeployTrigger: checksPass
+    buildCommand: NODE_ENV=development bun install --frozen-lockfile && bun run build
+    startCommand: bun run start
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 24.21.0
+      - key: BUN_VERSION
+        value: 1.4.3
+      - key: MONGOMS_DISABLE_POSTINSTALL
+        value: '1'
+      - key: LOG_LEVEL
+        value: info
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: APP_ORIGIN
+        sync: false
+      - key: MONGODB_URI
+        sync: false

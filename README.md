@@ -1,7 +1,8 @@
 # Lab Equipment Reservation System
 
-MERN application for reserving laboratory equipment. The project currently includes
-the monorepo setup, API foundation, authentication, equipment catalog, lifecycle, and booking engine from commits 01–06 of the plan in
+MERN application for reserving laboratory equipment. Includes authentication,
+equipment management, conflict-safe booking, fault reporting, an admin dashboard,
+production serving, CI and deployment configuration from the 10-commit plan in
 [IMPLEMENTATION_SPEC.md](IMPLEMENTATION_SPEC.md).
 
 ## Prerequisites
@@ -9,6 +10,7 @@ the monorepo setup, API foundation, authentication, equipment catalog, lifecycle
 - Node.js `24.21.0` (see `.node-version`). The package engine allows subsequent Node 24 patches.
 - Bun `1.4.3` for dependency installation and package scripts.
 - Docker with Docker Compose and permission to access the Docker daemon.
+- OpenSSL and Chromium's system libraries for the HTTPS E2E suite.
 
 The implementation spec's npm workspace and lockfile instructions are adapted to
 Bun workspaces and a committed `bun.lock`, following the project's working
@@ -80,6 +82,8 @@ bun run lint
 bun run format:check
 bun run test
 bun run build
+bun x --bun playwright install --no-shell chromium
+bun --no-env-file run test:e2e
 ```
 
 `bun run format` formats project files. The original implementation spec is
@@ -104,7 +108,19 @@ ranking and refresh, plus card links and loading/error states. Server suites run
 sequentially to avoid competing MongoDB binary downloads on a fresh checkout.
 
 `bun run build` produces `client/dist`. `bun run start` starts Express without
-watch mode; production SPA serving and deployment are scheduled for commit 10.
+watch mode. In production, Express serves both the API and the SPA from one origin;
+hashed assets are immutable for a year and HTML is revalidated. Unknown `/api/*`
+paths and missing assets remain JSON 404s. Production startup requires a readable
+client build. Secure session cookies require HTTPS.
+
+The Chromium E2E suite starts its own production-mode HTTPS app on port `4310`,
+temporary replica set and test-only accounts. Use `--no-env-file` to prevent Bun
+from loading `.env`; the harness always supplies its own database and secrets. OpenSSL is
+required for its temporary certificate. Test databases/certificates are removed
+when the harness stops. Browser failures retain traces/screenshots in ignored test
+output folders. First-run Chromium and MongoDB downloads require network access.
+On Ubuntu, add `--with-deps` to the browser installation command to install system
+libraries (as CI does). On Arch, use the system package manager for missing libraries.
 
 ## Structure and scope
 
@@ -119,8 +135,11 @@ watch mode; production SPA serving and deployment are scheduled for commit 10.
 - `server/src/modules`: authentication, equipment, reservation, fault report and dashboard APIs, models, and DTOs.
 - `server/test`: configuration, API middleware, authentication, and authorization tests.
 
-All domain features through commit 09 are implemented. Final quality checks,
-CI and production deployment follow in commit 10.
+All ten implementation increments are included. Follow
+[deployment instructions](docs/DEPLOYMENT.md) to configure GitHub branch protection,
+Atlas and Render, and verify the public HTTPS release. These account settings and
+hosted verification must be completed separately from local checks. Use the
+[demo rehearsal](docs/DEMO.md) for student/admin walkthroughs and the local fallback.
 
 ## API foundation
 

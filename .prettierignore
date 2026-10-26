@@ -3,3 +3,7 @@ node_modules/
 dist/
 coverage/
 IMPLEMENTATION_SPEC.md
+playwright-report/
+test-results/
+.cache/
+.playwright-mcp/

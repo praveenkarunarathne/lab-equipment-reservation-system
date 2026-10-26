@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { Writable } from 'node:stream';
 import { randomBytes } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
 import express from 'express';
 import mongoose from 'mongoose';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
@@ -21,6 +22,9 @@ let env;
 let app;
 let logger;
 let logs;
+const clientDist = fileURLToPath(
+  new URL('../fixtures/client/', import.meta.url),
+);
 
 beforeAll(async () => {
   replicaSet = await MongoMemoryReplSet.create({
@@ -225,6 +229,7 @@ test('expired sessions and tampered cookies cannot authorize unsafe requests', a
 
 test('production sets host-only secure cookies, CSP, HSTS, and one trusted proxy', async () => {
   const production = createApp({
+    clientDist,
     env: {
       ...env,
       nodeEnv: 'production',
@@ -505,4 +510,88 @@ test('critical index initialization is idempotent and enforces declared uniquene
     await model.collection.drop();
     connection.deleteModel('IndexProbe');
   }
+});
+
+test('production serves the SPA with revalidation and assets with immutable caching, without creating sessions', async () => {
+  const production = createApp({
+    env: { ...env, nodeEnv: 'production' },
+    connection,
+    logger,
+    clientDist,
+  });
+  for (const path of [
+    '/',
+    '/login',
+    '/equipment/0123456789abcdef01234567',
+    '/admin/fault-reports',
+  ]) {
+    const response = await request(production)
+      .get(path)
+      .set('Accept', 'text/html')
+      .expect(200);
+    assert.match(response.headers['content-type'], /text\/html/);
+    assert.equal(response.headers['cache-control'], 'no-cache');
+    assert.match(response.text, /SPA fixture/);
+    assert.equal(response.headers['set-cookie'], undefined);
+  }
+  const asset = await request(production)
+    .get('/assets/app-12345678.js')
+    .expect(200);
+  assert.match(asset.headers['cache-control'], /max-age=31536000/);
+  assert.match(asset.headers['cache-control'], /immutable/);
+  const conditional = await request(production)
+    .get('/index.html')
+    .set(
+      'If-None-Match',
+      (await request(production).get('/index.html')).headers.etag,
+    )
+    .expect(304);
+  assert.equal(conditional.headers['cache-control'], 'no-cache');
+  await request(production)
+    .head('/reservations')
+    .set('Accept', 'text/html')
+    .expect(200);
+});
+
+test('production never turns API errors, missing assets, non-HTML requests or mutations into SPA HTML', async () => {
+  const production = createApp({
+    env: { ...env, nodeEnv: 'production' },
+    connection,
+    logger,
+    clientDist,
+  });
+  for (const path of [
+    '/api',
+    '/api/unknown',
+    '/api/v1/unknown',
+    '/assets/missing.js',
+    '/favicon.ico',
+    '/.env',
+  ]) {
+    const response = await request(production)
+      .get(path)
+      .set('Accept', 'text/html')
+      .expect(404);
+    assert.equal(response.body.error.code, 'RESOURCE_NOT_FOUND');
+    assert.doesNotMatch(response.text, /SPA fixture/);
+  }
+  await request(production)
+    .get('/equipment')
+    .set('Accept', 'application/json')
+    .expect(404);
+  await request(production).post('/equipment').expect(404);
+  await request(app).get('/equipment').set('Accept', 'text/html').expect(404);
+});
+
+test('production refuses to start without a readable client build', () => {
+  assert.throws(
+    () =>
+      createApp({
+        env: { ...env, nodeEnv: 'production' },
+        connection,
+        logger,
+        clientDist: `${clientDist}/does-not-exist`,
+      }),
+    { code: 'ENOENT' },
+  );
 });

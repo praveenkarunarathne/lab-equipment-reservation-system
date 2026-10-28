@@ -6,6 +6,7 @@ import StatusBadge from '../components/StatusBadge.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
 import EquipmentLifecycleControls from '../components/EquipmentLifecycleControls.jsx';
 import BookingForm from '../components/BookingForm.jsx';
+import Icon from '../components/Icon.jsx';
 
 export default function EquipmentDetailPage() {
   const { id } = useParams();
@@ -15,59 +16,76 @@ export default function EquipmentDetailPage() {
     `/equipment/${encodeURIComponent(id)}`,
   );
   return (
-    <section>
-      <p>
-        <Link to="/equipment">Back to equipment</Link>
+    <section className="equipment-detail">
+      <p className="back-link">
+        <Link to="/equipment">← Back to equipment</Link>
       </p>
-      <h1>{data?.name ?? 'Equipment details'}</h1>
+      <div className="page-heading">
+        <div>
+          <span className="eyebrow">Equipment profile</span>
+          <h1>{data?.name ?? 'Equipment details'}</h1>
+          <p className="page-description">
+            Equipment information and laboratory access, in one place.
+          </p>
+        </div>
+      </div>
       {notice && <p role="status">{notice}</p>}
       {loading && <p role="status">Loading equipment…</p>}
       {error && <ErrorMessage error={error} onRetry={retry} />}
       {data && (
-        <>
-          <StatusBadge status={data.status} />
-          {data.statusReason && <p>{data.statusReason}</p>}
-          <dl>
-            <dt>Asset code</dt>
-            <dd>{data.assetCode}</dd>
-            <dt>Category</dt>
-            <dd>{data.category}</dd>
-            <dt>Location</dt>
-            <dd>{data.location}</dd>
-          </dl>
-          <h2>Description</h2>
-          <p className="equipment-description">
-            {data.description || 'No description provided.'}
-          </p>
-          {user.role === 'student' && (
-            <p>
-              <Link to={`/fault-reports/new?equipmentId=${data.id}`}>
-                Report a fault
-              </Link>
-            </p>
-          )}
-          {user.role === 'student' && (
-            <BookingForm key={data.id} equipmentId={data.id} />
-          )}
-          {user.role === 'admin' && (
-            <p>
-              <Link to={`/admin/equipment/${data.id}/edit`}>
-                Edit equipment
-              </Link>
-            </p>
-          )}
-          {user.role === 'admin' && (
-            <EquipmentLifecycleControls
-              equipment={data}
-              onChanged={(count) => {
-                setNotice(
-                  `Status saved. ${count} future reservation${count === 1 ? '' : 's'} cancelled.`,
-                );
-                retry();
-              }}
-            />
-          )}
-        </>
+        <div className="detail-grid">
+          <div className="detail-summary">
+            <div className="detail-visual" aria-hidden="true">
+              <Icon name="equipment" />
+              <span>Laboratory equipment</span>
+            </div>
+            <div className="detail-summary-body">
+              <StatusBadge status={data.status} />
+              {data.statusReason && (
+                <p className="status-reason">{data.statusReason}</p>
+              )}
+              <dl className="equipment-metadata">
+                <dt>Asset code</dt>
+                <dd>{data.assetCode}</dd>
+                <dt>Category</dt>
+                <dd>{data.category}</dd>
+                <dt>Location</dt>
+                <dd>{data.location}</dd>
+              </dl>
+              <h2>Description</h2>
+              <p className="equipment-description">
+                {data.description || 'No description provided.'}
+              </p>
+              <p className="detail-link">
+                {user.role === 'student' ? (
+                  <Link to={`/fault-reports/new?equipmentId=${data.id}`}>
+                    Report a fault
+                  </Link>
+                ) : (
+                  <Link to={`/admin/equipment/${data.id}/edit`}>
+                    Edit equipment
+                  </Link>
+                )}
+                <Icon name="arrow" />
+              </p>
+            </div>
+          </div>
+          <div className="detail-actions">
+            {user.role === 'student' ? (
+              <BookingForm key={data.id} equipmentId={data.id} />
+            ) : (
+              <EquipmentLifecycleControls
+                equipment={data}
+                onChanged={(count) => {
+                  setNotice(
+                    `Status saved. ${count} future reservation${count === 1 ? '' : 's'} cancelled.`,
+                  );
+                  retry();
+                }}
+              />
+            )}
+          </div>
+        </div>
       )}
     </section>
   );

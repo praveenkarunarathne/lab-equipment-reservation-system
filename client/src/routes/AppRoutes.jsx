@@ -1,4 +1,5 @@
-import { Link, Navigate, Route, Routes } from 'react-router';
+import { useLayoutEffect } from 'react';
+import { Link, Navigate, Route, Routes, useLocation } from 'react-router';
 import { useAuth } from '../auth/useAuth.js';
 import ProtectedRoute from '../auth/ProtectedRoute.jsx';
 import AdminRoute from '../auth/AdminRoute.jsx';
@@ -16,6 +17,10 @@ import FaultReportDetailPage from '../pages/FaultReportDetailPage.jsx';
 import AdminDashboardPage from '../pages/admin/AdminDashboardPage.jsx';
 
 export default function AppRoutes() {
+  const { pathname } = useLocation();
+  useLayoutEffect(() => {
+    document.documentElement.scrollTop = 0;
+  }, [pathname]);
   const { user, loading, error, retry } = useAuth();
   if (loading) return <p role="status">Checking your session…</p>;
   if (error)

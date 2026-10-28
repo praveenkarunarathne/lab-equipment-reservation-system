@@ -4,6 +4,7 @@ import { useApiResource } from '../api/useApiResource.js';
 import StatusBadge from '../components/StatusBadge.jsx';
 import Pagination from '../components/Pagination.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
+import Icon from '../components/Icon.jsx';
 
 export default function EquipmentListPage({ admin = false }) {
   const { user } = useAuth();
@@ -35,13 +36,27 @@ export default function EquipmentListPage({ admin = false }) {
   }
 
   return (
-    <section>
-      <h1>{admin ? 'Manage equipment' : 'Equipment'}</h1>
-      {admin && (
-        <p>
-          <Link to="/admin/equipment/new">Add equipment</Link>
-        </p>
-      )}
+    <section className="catalog-page">
+      <div className="page-heading">
+        <div>
+          <span className="eyebrow">
+            {admin ? 'Laboratory management' : 'Explore your laboratory'}
+          </span>
+          <h1>{admin ? 'Manage equipment' : 'Equipment'}</h1>
+          <p className="page-description">
+            {admin
+              ? 'Keep your equipment catalog accurate and ready for the next practical.'
+              : 'Find the right tools for your next experiment. Choose equipment to view available slots.'}
+          </p>
+        </div>
+        {admin && (
+          <p>
+            <Link className="button-link" to="/admin/equipment/new">
+              Add equipment <Icon name="arrow" />
+            </Link>
+          </p>
+        )}
+      </div>
       <form
         className="catalog-filters"
         key={params.toString()}
@@ -80,7 +95,10 @@ export default function EquipmentListPage({ admin = false }) {
       {error && <ErrorMessage error={error} onRetry={retry} />}
       {data && (
         <>
-          <p role="status">{data.pagination.total} equipment items found.</p>
+          <div className="results-heading">
+            <p role="status">{data.pagination.total} equipment items found.</p>
+            <span>Equipment directory</span>
+          </div>
           {data.data.length === 0 ? (
             <p>No equipment matches these filters.</p>
           ) : (
@@ -99,9 +117,19 @@ export default function EquipmentListPage({ admin = false }) {
                 <tbody>
                   {data.data.map((item) => (
                     <tr key={item.id}>
-                      <td>{item.assetCode}</td>
                       <td>
-                        <Link to={`/equipment/${item.id}`}>{item.name}</Link>
+                        <span className="asset-code">{item.assetCode}</span>
+                      </td>
+                      <td>
+                        <Link
+                          className="equipment-name"
+                          to={`/equipment/${item.id}`}
+                        >
+                          <span className="equipment-icon">
+                            <Icon name="equipment" />
+                          </span>
+                          {item.name}
+                        </Link>
                       </td>
                       <td>{item.category}</td>
                       <td>{item.location}</td>

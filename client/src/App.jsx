@@ -6,10 +6,9 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <main>
-          <p className="brand">Lab Equipment Reservation System</p>
+        <div className="app-root">
           <AppRoutes />
-        </main>
+        </div>
       </BrowserRouter>
     </AuthProvider>
   );

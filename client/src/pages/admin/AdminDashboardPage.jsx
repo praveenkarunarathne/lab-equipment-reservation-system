@@ -5,12 +5,17 @@ import ErrorMessage from '../../components/ErrorMessage.jsx';
 export default function AdminDashboardPage() {
   const { data, loading, error, retry } = useApiResource('/admin/dashboard');
   return (
-    <section>
-      <h1>Administration</h1>
-      <p>Laboratory overview</p>
-      <button type="button" disabled={loading} onClick={retry}>
-        Refresh dashboard
-      </button>
+    <section className="dashboard-page">
+      <div className="page-heading">
+        <div>
+          <span className="eyebrow">Laboratory management</span>
+          <h1>Administration</h1>
+          <p className="page-description">Laboratory overview</p>
+        </div>
+        <button type="button" disabled={loading} onClick={retry}>
+          Refresh dashboard
+        </button>
+      </div>
       {loading && <p role="status">Loading dashboard…</p>}
       {error && <ErrorMessage error={error} onRetry={retry} />}
       {data && (

@@ -382,6 +382,38 @@ error and retry instead of zero counts. Metrics are computed from the existing
 indexed collections on every request, using one server time per request. There
 are no client-supplied dates, charts, caches or background jobs.
 
+## Seed sample data
+
+With MongoDB running and the replica set initialized, run:
+
+```sh
+bun run db:seed-demo
+```
+
+This uses the database in your root `.env` and requires development/test mode.
+Demo credentials are public, so use a development database. Production mode is
+rejected before connecting. Existing admin bootstrap settings are not used.
+
+The seed creates:
+
+- 1 demo administrator and 2 demo students.
+- 10 equipment items: 6 available, 2 maintenance, 1 unavailable and 1 archived.
+- 36 reservations: 25 past, 6 upcoming and 5 cancelled, including lifecycle reasons.
+- 7 faults: 5 open and 2 resolved, including an archived-equipment report.
+
+| Role    | Email                        | Password                  |
+| ------- | ---------------------------- | ------------------------- |
+| Admin   | `demo.admin@example.test`    | `Lab demo password 2026!` |
+| Student | `demo.student1@example.test` | `Lab demo password 2026!` |
+| Student | `demo.student2@example.test` | `Lab demo password 2026!` |
+
+Reservation dates are generated from the first seed run using legal Asia/Colombo
+slots. Historical reservations populate Top 5 usage immediately. The entire
+dataset is inserted in one transaction; collisions with existing demo emails or
+`DEMO-*` asset codes abort without overwriting records. Rerunning an already-seeded
+database skips the dataset, preserving edits, passwords and original dates. To
+generate a fresh dated dataset later, use a fresh development database.
+
 ## Seed an administrator
 
 There is no public admin registration. Temporarily add these seed-only values to

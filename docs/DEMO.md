@@ -4,6 +4,11 @@ Start from the README's local setup or a verified HTTPS deployment. Keep one adm
 and one student in separate browser profiles. Use freshly created equipment so
 existing history is preserved. Do not reset a shared database for a demonstration.
 
+For a populated development database, run `bun run db:seed-demo` and use the demo
+accounts documented in the README. It supplies catalog statuses, history, faults
+and Top 5 usage without changing existing records. This command refuses production
+mode and skips an existing sample dataset on reruns.
+
 1. Admin: create an equipment item with a unique asset code and inspect its details.
 2. Student: register/sign in, search and filter the catalog, then open the item.
 3. Choose a server-returned Asia/Colombo slot and book it. Show the confirmed

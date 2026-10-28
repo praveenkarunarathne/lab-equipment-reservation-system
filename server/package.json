@@ -9,6 +9,7 @@
     "test": "vitest run",
     "db:migrate": "node src/db/migrate.js",
     "db:seed-admin": "node --env-file-if-exists=../.env src/db/seedAdmin.js",
+    "db:seed-demo": "node --env-file-if-exists=../.env src/db/seedDemo.js",
     "db:replset-init": "node --env-file-if-exists=../.env src/db/initReplicaSet.js",
     "db:check": "node --env-file-if-exists=../.env src/db/checkTransaction.js"
   },

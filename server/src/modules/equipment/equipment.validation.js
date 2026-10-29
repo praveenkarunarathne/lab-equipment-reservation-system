@@ -43,4 +43,5 @@ export const equipmentQuerySchema = z.strictObject({
   q: z.string().trim().max(80).optional(),
   category: z.string().trim().max(50).optional(),
   status: z.enum(EQUIPMENT_STATUSES).optional(),
+  sort: z.enum(['name_asc', 'name_desc', 'newest']).default('name_asc'),
 });

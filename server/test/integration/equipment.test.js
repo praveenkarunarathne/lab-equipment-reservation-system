@@ -340,6 +340,44 @@ test('pagination defaults, ordering, counts, and out-of-range pages are correct'
   );
 });
 
+test('catalog sorts before pagination, breaks ties and preserves filters', async () => {
+  const fixtures = [
+    { name: 'Alpha', assetCode: 'AA', createdAt: new Date('2026-01-01') },
+    { name: 'Zulu', assetCode: 'ZZ', createdAt: new Date('2026-01-02') },
+    { name: 'Zulu', assetCode: 'BB', createdAt: new Date('2026-01-02') },
+  ];
+  const items = [];
+  for (const fixture of fixtures) items.push(await createFixture(fixture));
+  await createFixture({ assetCode: 'EXCLUDED', category: 'Electronics' });
+  await createFixture({ assetCode: 'ARCHIVED', archivedAt: new Date() });
+  const newest = [...items]
+    .sort((a, b) => b.id.localeCompare(a.id))
+    .filter((item) => item.name === 'Zulu')
+    .map((item) => item.assetCode);
+  for (const [sort, expected] of [
+    ['name_asc', ['AA', 'BB', 'ZZ']],
+    ['name_desc', ['BB', 'ZZ', 'AA']],
+    ['newest', [...newest, 'AA']],
+  ]) {
+    const codes = [];
+    for (let page = 1; page <= 3; page += 1) {
+      const response = await studentSession.agent
+        .get('/api/v1/equipment')
+        .query({
+          sort,
+          page,
+          limit: 1,
+          category: 'Optics',
+          status: 'available',
+        })
+        .expect(200);
+      assert.equal(response.body.pagination.total, 3);
+      codes.push(response.body.data[0].assetCode);
+    }
+    assert.deepEqual(codes, expected);
+  }
+});
+
 test('search escapes regex metacharacters in each searchable field', async () => {
   await createFixture({
     name: 'Scope [A]+ (trial).*? ^$|{}\\',
@@ -416,6 +454,10 @@ test('invalid queries and IDs fail validation before database lookups', async ()
     'limit=0',
     'page=1&page=2',
     'status=all',
+    'sort=unknown',
+    'sort=',
+    'sort=name_asc&sort=newest',
+    'sort[$ne]=name_asc',
     `q=${'x'.repeat(81)}`,
     `category=${'x'.repeat(51)}`,
     'q[$ne]=x',

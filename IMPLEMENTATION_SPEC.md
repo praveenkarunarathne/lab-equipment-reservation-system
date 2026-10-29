@@ -750,7 +750,11 @@ Query:
 - `category` optional max 50; exact case-insensitive match.
 - `status` optional enum `available|maintenance|unavailable`.
 
-Always exclude archived items. Sort by name ascending, then assetCode ascending.
+- `sort` optional enum `name_asc|name_desc|newest`, default `name_asc`.
+
+Always exclude archived items. Apply the selected sort before pagination: name
+ascending or descending with assetCode ascending as the tie-breaker; newest uses
+createdAt descending then ID descending. The catalog exposes a Sort by control.
 
 Student UI defaults to `status=available`; API itself may return any current status when explicitly requested so status can be inspected and faults can be reported.
 

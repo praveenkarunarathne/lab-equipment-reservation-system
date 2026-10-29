@@ -203,8 +203,12 @@ The API supports:
   `page` defaults to 1 (max 1,000,000); `limit` defaults to 12 (max 50).
   Optional filters are `q` (max 80), `category` (exact, case-insensitive, max 50),
   and `status` (`available`, `maintenance`, `unavailable`). Search matches literal
-  text across name, asset code, category, and location. Results sort by name then
-  asset code. Archived equipment is always excluded; the API has no default status.
+  text across name, asset code, category, and location. The `sort` parameter accepts
+  `name_asc` (default), `name_desc`, or `newest`, selectable through the catalog's
+  **Sort by** control. Name sorts use asset code ascending to break ties; newest
+  uses creation time descending, then ID descending. Sorting happens before
+  pagination and works with all filters. Archived equipment is always excluded;
+  the API has no default status.
 - `GET /api/v1/equipment/:id`: non-archived equipment or a JSON `404`.
 - `POST /api/v1/equipment`: admin and CSRF required; strict metadata body
   `{ assetCode, name, category, location, description? }`. Creates available equipment
@@ -217,6 +221,11 @@ the unique active `(equipmentId, startAt)` index. Cancelled reservations can sha
 a slot, so cancellation history does not prevent rebooking.
 
 ## Equipment lifecycle
+
+Equipment implements the CRUD **Delete** operation through soft deletion, labelled
+**Archive** in the UI. It removes equipment from the active catalog while retaining
+linked reservation and fault history. Permanent deletion and restoration are not
+supported.
 
 Open an equipment detail page as an administrator to change its operational
 status or archive it. Maintenance and unavailable states require a reason of

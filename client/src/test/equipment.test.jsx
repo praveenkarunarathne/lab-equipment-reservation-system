@@ -92,6 +92,7 @@ test('applying search and category filters resets pagination and allows all stat
   await user.paste(' scope [A] ');
   await user.type(screen.getByLabelText('Category'), ' Optics ');
   await user.selectOptions(screen.getByLabelText('Status'), 'all');
+  await user.selectOptions(screen.getByLabelText('Sort by'), 'name_desc');
   request.mockResolvedValueOnce(page([]));
   await user.click(screen.getByRole('button', { name: 'Apply filters' }));
   await screen.findByText('No equipment matches these filters.');
@@ -100,8 +101,10 @@ test('applying search and category filters resets pagination and allows all stat
   expect(query.get('page')).toBe('1');
   expect(query.get('q')).toBe('scope [A]');
   expect(query.get('category')).toBe('Optics');
+  expect(query.get('sort')).toBe('name_desc');
   expect(query.has('status')).toBe(false);
   expect(screen.getByLabelText('Status')).toHaveValue('all');
+  expect(screen.getByLabelText('Sort by')).toHaveValue('name_desc');
 });
 
 test('pagination retains filters and updates navigation controls', async () => {
@@ -116,7 +119,7 @@ test('pagination retains filters and updates navigation controls', async () => {
         totalPages: 3,
       }),
     );
-  renderPage('/equipment?q=scope', request);
+  renderPage('/equipment?q=scope&sort=newest', request);
   await screen.findByRole('link', { name: 'Microscope' });
   expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled();
   await user.click(screen.getByRole('button', { name: 'Next' }));
@@ -127,6 +130,8 @@ test('pagination retains filters and updates navigation controls', async () => {
     .searchParams;
   expect(query.get('page')).toBe('2');
   expect(query.get('q')).toBe('scope');
+  expect(query.get('sort')).toBe('newest');
+  expect(screen.getByLabelText('Sort by')).toHaveValue('newest');
 });
 
 test('details display operational status and reason with admin-only editing', async () => {

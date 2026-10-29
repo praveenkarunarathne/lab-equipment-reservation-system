@@ -10,7 +10,9 @@ and Top 5 usage without changing existing records. This command refuses producti
 mode and skips an existing sample dataset on reruns.
 
 1. Admin: create an equipment item with a unique asset code and inspect its details.
-2. Student: register/sign in, search and filter the catalog, then open the item.
+2. Student: register/sign in, search and filter the catalog, choose **Sort by**
+   Name A–Z, Name Z–A or Newest first, and apply. Check the order across pages,
+   then open the item.
 3. Choose a server-returned Asia/Colombo slot and book it. Show the confirmed
    reservation and derived upcoming phase. For a conflict demo, open availability
    in two student tabs before booking; submit the same selected slot in the stale
@@ -26,7 +28,8 @@ mode and skips an existing sample dataset on reruns.
 9. Open Administration: check equipment/status counts, upcoming reservations,
    open faults and the previous-30-day Top 5 table. Fresh future bookings are not
    usage; the isolated E2E fixture and integration tests verify historical counts.
-10. Archive the demo item and show preserved reservation/fault history. Log out;
+10. Demonstrate safe deletion: archive the demo item with confirmation, show that
+    it disappears from the catalog, and show preserved reservation/fault history. Log out;
     protected routes should require sign-in. Students must not access admin pages.
 
 Before the presentation, run all release checks from `DEPLOYMENT.md` and rehearse

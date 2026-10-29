@@ -29,7 +29,7 @@ function requireEquipment(equipment) {
 export function createEquipmentService(connection) {
   const Equipment = getEquipmentModel(connection);
   return {
-    async list({ page, limit, q, category, status }) {
+    async list({ page, limit, q, category, status, sort = 'name_asc' }) {
       const filter = { archivedAt: null };
       if (q) {
         const expression = new RegExp(escapeRegex(q), 'i');
@@ -40,9 +40,13 @@ export function createEquipmentService(connection) {
       if (category)
         filter.category = new RegExp(`^${escapeRegex(category)}$`, 'i');
       if (status) filter.status = status;
+      const order =
+        sort === 'newest'
+          ? { createdAt: -1, _id: -1 }
+          : { name: sort === 'name_desc' ? -1 : 1, assetCode: 1 };
       const [equipment, total] = await Promise.all([
         Equipment.find(filter)
-          .sort({ name: 1, assetCode: 1 })
+          .sort(order)
           .skip((page - 1) * limit)
           .limit(limit)
           .lean(),

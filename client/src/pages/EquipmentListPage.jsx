@@ -16,7 +16,7 @@ export default function EquipmentListPage({ admin = false }) {
     page: params.get('page') ?? '1',
     limit: '12',
   });
-  for (const field of ['q', 'category'])
+  for (const field of ['q', 'category', 'sort'])
     if (params.get(field)) query.set(field, params.get(field));
   if (status !== 'all') query.set('status', status);
   const { data, error, loading, retry } = useApiResource(`/equipment?${query}`);
@@ -87,6 +87,18 @@ export default function EquipmentListPage({ admin = false }) {
             <option value="available">Available</option>
             <option value="maintenance">Maintenance</option>
             <option value="unavailable">Unavailable</option>
+          </select>
+        </div>
+        <div className="form-field">
+          <label htmlFor="sort">Sort by</label>
+          <select
+            id="sort"
+            name="sort"
+            defaultValue={params.get('sort') ?? 'name_asc'}
+          >
+            <option value="name_asc">Name A–Z</option>
+            <option value="name_desc">Name Z–A</option>
+            <option value="newest">Newest first</option>
           </select>
         </div>
         <button type="submit">Apply filters</button>

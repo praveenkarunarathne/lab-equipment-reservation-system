@@ -23,6 +23,36 @@ async function signOut(page) {
   ).toBeVisible();
 }
 
+test('mobile navigation respects reduced motion and preserves keyboard focus', async ({
+  page,
+}) => {
+  await login(page, STUDENT_EMAIL);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const toggle = page.getByRole('button', { name: 'Open navigation' });
+  await toggle.click();
+  const sidebar = page.getByRole('complementary');
+  await expect(sidebar).toBeVisible();
+  expect(await sidebar.evaluate((element) => element.style.transform)).toBe('');
+  await page.keyboard.press('Shift+Tab');
+  await expect(
+    page.getByRole('button', { name: 'Sign out', exact: true }),
+  ).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(toggle).toBeFocused();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await toggle.click();
+  await expect(sidebar).toHaveCSS('opacity', '1');
+  await page
+    .getByRole('link', { name: 'My reservations', exact: true })
+    .click();
+  await expect(
+    page.getByRole('heading', { name: 'My reservations' }),
+  ).toBeVisible();
+  await expect(page.getByRole('main')).toBeFocused();
+});
+
 test('production HTTPS restores secure sessions and enforces API, CSRF and role boundaries', async ({
   page,
 }) => {

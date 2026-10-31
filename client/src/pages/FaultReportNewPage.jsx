@@ -31,7 +31,7 @@ function FaultReportForm({ equipment }) {
     <section>
       <h1>Report a fault</h1>
       <p>
-        {equipment.name} · {equipment.assetCode} · {equipment.location}
+        {equipment.name}, {equipment.assetCode}, {equipment.location}
       </p>
       <p role="note">
         Do not use equipment you suspect is unsafe. Inform laboratory staff

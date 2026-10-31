@@ -8,9 +8,10 @@ export default function AdminDashboardPage() {
     <section className="dashboard-page">
       <div className="page-heading">
         <div>
-          <span className="eyebrow">Laboratory management</span>
           <h1>Administration</h1>
-          <p className="page-description">Laboratory overview</p>
+          <p className="page-description">
+            Equipment availability and reservation activity.
+          </p>
         </div>
         <button type="button" disabled={loading} onClick={retry}>
           Refresh dashboard
@@ -20,6 +21,7 @@ export default function AdminDashboardPage() {
       {error && <ErrorMessage error={error} onRetry={retry} />}
       {data && (
         <>
+          <h2 className="section-title">Equipment inventory</h2>
           <dl className="dashboard-metrics">
             {[
               ['Current equipment', data.equipment.total, '/admin/equipment'],
@@ -38,16 +40,6 @@ export default function AdminDashboardPage() {
                 data.equipment.byStatus.unavailable,
                 '/admin/equipment?status=unavailable',
               ],
-              [
-                'Upcoming reservations',
-                data.upcomingReservationCount,
-                '/admin/reservations?view=upcoming',
-              ],
-              [
-                'Open fault reports',
-                data.openFaultReportCount,
-                '/admin/fault-reports?status=open',
-              ],
             ].map(([label, count, path]) => (
               <div key={label}>
                 <dt>
@@ -57,7 +49,27 @@ export default function AdminDashboardPage() {
               </div>
             ))}
           </dl>
-          <h2>Top 5 equipment · previous 30 days</h2>
+          <dl className="dashboard-queues">
+            <div>
+              <dt>
+                <Link to="/admin/reservations?view=upcoming">
+                  Upcoming reservations
+                </Link>
+                <span>Active bookings that have not started.</span>
+              </dt>
+              <dd>{data.upcomingReservationCount}</dd>
+            </div>
+            <div>
+              <dt>
+                <Link to="/admin/fault-reports?status=open">
+                  Open fault reports
+                </Link>
+                <span>Reported issues awaiting resolution.</span>
+              </dt>
+              <dd>{data.openFaultReportCount}</dd>
+            </div>
+          </dl>
+          <h2>Top 5 equipment (previous 30 days)</h2>
           <p>
             Counts non-cancelled reservation starts before now, including slots
             in progress. This measures reservations; physical use is not

@@ -18,14 +18,15 @@ export default function EquipmentDetailPage() {
   return (
     <section className="equipment-detail">
       <p className="back-link">
-        <Link to="/equipment">← Back to equipment</Link>
+        <Link to="/equipment">Back to equipment</Link>
       </p>
       <div className="page-heading">
         <div>
-          <span className="eyebrow">Equipment profile</span>
           <h1>{data?.name ?? 'Equipment details'}</h1>
           <p className="page-description">
-            Equipment information and laboratory access, in one place.
+            {data
+              ? `${data.assetCode}, ${data.category}, ${data.location}`
+              : 'Equipment information and availability.'}
           </p>
         </div>
       </div>
@@ -35,11 +36,8 @@ export default function EquipmentDetailPage() {
       {data && (
         <div className="detail-grid">
           <div className="detail-summary">
-            <div className="detail-visual" aria-hidden="true">
-              <Icon name="equipment" />
-              <span>Laboratory equipment</span>
-            </div>
             <div className="detail-summary-body">
+              <h2>Equipment details</h2>
               <StatusBadge status={data.status} />
               {data.statusReason && (
                 <p className="status-reason">{data.statusReason}</p>

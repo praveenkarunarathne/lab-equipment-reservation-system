@@ -6,4 +6,5 @@ IMPLEMENTATION_SPEC.md
 playwright-report/
 test-results/
 .cache/
+.hallmark/
 .playwright-mcp/

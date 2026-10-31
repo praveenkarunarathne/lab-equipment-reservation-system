@@ -48,37 +48,41 @@ export default function AuthForm({ register = false }) {
           </span>
         </div>
         <div className="auth-story-content">
-          <span className="eyebrow">Your laboratory, connected</span>
           <h2>
-            Less waiting.
+            Plan your time
             <br />
-            More discovering.
+            in the lab.
           </h2>
           <p>
-            Find the right equipment, reserve your time, and get back to the
-            work that matters.
+            Check equipment availability, book a session and keep track of your
+            reservations.
           </p>
-          <div className="lab-illustration" aria-hidden="true">
-            <div className="lab-orbit orbit-one" />
-            <div className="lab-orbit orbit-two" />
-            <Icon name="lab" />
-            <span className="illustration-label">
-              A space for your next discovery
-            </span>
-          </div>
+          <ol className="auth-steps">
+            <li>
+              <strong>Find equipment</strong>
+              <span>Browse the catalog and check its current status.</span>
+            </li>
+            <li>
+              <strong>Reserve a session</strong>
+              <span>Choose an available one-hour slot.</span>
+            </li>
+            <li>
+              <strong>Keep the lab informed</strong>
+              <span>Manage bookings and report equipment faults.</span>
+            </li>
+          </ol>
         </div>
-        <p className="auth-story-footer">Lab Equipment Reservation System</p>
+        <p className="auth-story-footer">
+          Booking timezone <strong>Asia/Colombo</strong>
+        </p>
       </section>
       <section className="auth-panel">
         <div className="auth-card">
-          <span className="eyebrow">
-            {register ? 'Join your laboratory' : 'Welcome back'}
-          </span>
           <h1>{register ? 'Create an account' : 'Sign in'}</h1>
           <p className="auth-description">
             {register
-              ? 'Your equipment, bookings, and laboratory updates in one place.'
-              : 'Sign in to access your laboratory workspace.'}
+              ? 'Register as a student to reserve laboratory equipment.'
+              : 'Use your account to access equipment and reservations.'}
           </p>
           {location.state?.registered && !register && (
             <p role="status">Account created. Sign in to continue.</p>
@@ -127,7 +131,7 @@ export default function AuthForm({ register = false }) {
                   />
                   {register && field === 'password' && (
                     <small id="password-help">
-                      Use 15–128 characters. Spaces and Unicode are welcome.
+                      Use 15 to 128 characters. Spaces and Unicode are welcome.
                     </small>
                   )}
                   {messages && (

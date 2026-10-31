@@ -4,7 +4,6 @@ import { useApiResource } from '../api/useApiResource.js';
 import StatusBadge from '../components/StatusBadge.jsx';
 import Pagination from '../components/Pagination.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
-import Icon from '../components/Icon.jsx';
 
 export default function EquipmentListPage({ admin = false }) {
   const { user } = useAuth();
@@ -39,20 +38,17 @@ export default function EquipmentListPage({ admin = false }) {
     <section className="catalog-page">
       <div className="page-heading">
         <div>
-          <span className="eyebrow">
-            {admin ? 'Laboratory management' : 'Explore your laboratory'}
-          </span>
           <h1>{admin ? 'Manage equipment' : 'Equipment'}</h1>
           <p className="page-description">
             {admin
-              ? 'Keep your equipment catalog accurate and ready for the next practical.'
-              : 'Find the right tools for your next experiment. Choose equipment to view available slots.'}
+              ? 'Add equipment, update its details and manage availability.'
+              : 'Browse the catalog. Select an item to check availability and reserve a slot.'}
           </p>
         </div>
         {admin && (
           <p>
             <Link className="button-link" to="/admin/equipment/new">
-              Add equipment <Icon name="arrow" />
+              <span aria-hidden="true">+</span> Add equipment
             </Link>
           </p>
         )}
@@ -68,6 +64,7 @@ export default function EquipmentListPage({ admin = false }) {
             id="search"
             name="q"
             maxLength={80}
+            placeholder="Name, asset code or location"
             defaultValue={params.get('q') ?? ''}
           />
         </div>
@@ -96,8 +93,8 @@ export default function EquipmentListPage({ admin = false }) {
             name="sort"
             defaultValue={params.get('sort') ?? 'name_asc'}
           >
-            <option value="name_asc">Name A–Z</option>
-            <option value="name_desc">Name Z–A</option>
+            <option value="name_asc">Name A to Z</option>
+            <option value="name_desc">Name Z to A</option>
             <option value="newest">Newest first</option>
           </select>
         </div>
@@ -109,7 +106,6 @@ export default function EquipmentListPage({ admin = false }) {
         <>
           <div className="results-heading">
             <p role="status">{data.pagination.total} equipment items found.</p>
-            <span>Equipment directory</span>
           </div>
           {data.data.length === 0 ? (
             <p>No equipment matches these filters.</p>
@@ -137,9 +133,6 @@ export default function EquipmentListPage({ admin = false }) {
                           className="equipment-name"
                           to={`/equipment/${item.id}`}
                         >
-                          <span className="equipment-icon">
-                            <Icon name="equipment" />
-                          </span>
                           {item.name}
                         </Link>
                       </td>

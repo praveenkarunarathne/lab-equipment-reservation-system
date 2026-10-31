@@ -40,7 +40,7 @@ export default function BookingForm({ equipmentId }) {
   return (
     <section className="booking-form">
       <h2>Reserve a slot</h2>
-      <p>One-hour slots, Monday–Friday. All times are in Asia/Colombo.</p>
+      <p>One-hour slots, Monday to Friday. All times are in Asia/Colombo.</p>
       {booked && (
         <p role="status">
           Reservation confirmed.{' '}

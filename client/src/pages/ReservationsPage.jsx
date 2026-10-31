@@ -75,11 +75,15 @@ function ReservationList({ admin }) {
   }
   return (
     <section>
-      <h1>{admin ? 'Manage reservations' : 'My reservations'}</h1>
-      <p>
-        All times are in Asia/Colombo. Active reservations can be cancelled
-        before they start.
-      </p>
+      <div className="page-heading">
+        <div>
+          <h1>{admin ? 'Manage reservations' : 'My reservations'}</h1>
+          <p className="page-description">
+            All times are in Asia/Colombo. Active reservations can be cancelled
+            before they start.
+          </p>
+        </div>
+      </div>
       <form
         className="catalog-filters"
         key={params.toString()}
@@ -154,7 +158,7 @@ function ReservationList({ admin }) {
                           </Link>
                         )}
                         <br />
-                        {reservation.equipment.assetCode} ·{' '}
+                        {reservation.equipment.assetCode},{' '}
                         {reservation.equipment.location}
                         {admin && (
                           <>

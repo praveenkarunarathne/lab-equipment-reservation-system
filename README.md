@@ -5,6 +5,9 @@ equipment management, conflict-safe booking, fault reporting, an admin dashboard
 production serving, CI and deployment configuration from the 10-commit plan in
 [IMPLEMENTATION_SPEC.md](IMPLEMENTATION_SPEC.md).
 
+The interface's [design and motion notes](docs/UI_DESIGN.md) describe the Hallmark
+review and GSAP state transitions.
+
 ## Prerequisites
 
 - Node.js `24.21.0` (see `.node-version`). The package engine allows subsequent Node 24 patches.

@@ -31,12 +31,23 @@ function FaultReportList({ admin }) {
   }
   return (
     <section>
-      <h1>{admin ? 'Manage fault reports' : 'My fault reports'}</h1>
-      {!admin && (
-        <p>
-          <Link to="/fault-reports/new">Report a fault</Link>
-        </p>
-      )}
+      <div className="page-heading">
+        <div>
+          <h1>{admin ? 'Manage fault reports' : 'My fault reports'}</h1>
+          <p className="page-description">
+            {admin
+              ? 'Review reported issues and record their resolution.'
+              : 'Track the issues you have reported to laboratory staff.'}
+          </p>
+        </div>
+        {!admin && (
+          <p>
+            <Link className="button-link" to="/fault-reports/new">
+              Report a fault
+            </Link>
+          </p>
+        )}
+      </div>
       <form
         className="catalog-filters"
         key={params.toString()}
@@ -117,7 +128,7 @@ function FaultReportList({ admin }) {
                       <td>
                         {report.equipment ? (
                           <>
-                            {report.equipment.name} ·{' '}
+                            {report.equipment.name},{' '}
                             {report.equipment.assetCode}
                             {report.equipment.archived && ' (Archived)'}
                             {admin && (
@@ -158,7 +169,13 @@ function FaultReportList({ admin }) {
                           )}
                         </td>
                       )}
-                      <td>{report.status === 'open' ? 'Open' : 'Resolved'}</td>
+                      <td>
+                        <span
+                          className={`status-badge status-${report.status}`}
+                        >
+                          {report.status === 'open' ? 'Open' : 'Resolved'}
+                        </span>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

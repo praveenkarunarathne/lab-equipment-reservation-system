@@ -2,6 +2,10 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router';
 import { useAuth } from '../auth/useAuth.js';
 import Icon from './Icon.jsx';
+import { gsap } from 'gsap';
+import { useGSAP } from '@gsap/react';
+
+gsap.registerPlugin(useGSAP);
 
 export default function AppLayout() {
   const { user, logout } = useAuth();
@@ -11,6 +15,30 @@ export default function AppLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButton = useRef(null);
   const sidebar = useRef(null);
+  useGSAP(
+    () => {
+      if (!menuOpen || !window.matchMedia) return;
+      const media = gsap.matchMedia();
+      media.add(
+        '(max-width: 760px) and (prefers-reduced-motion: no-preference)',
+        () => {
+          gsap.fromTo(
+            sidebar.current,
+            { x: -16, opacity: 0.8 },
+            {
+              x: 0,
+              opacity: 1,
+              duration: 0.18,
+              ease: 'power2.out',
+              clearProps: 'transform,opacity',
+            },
+          );
+        },
+      );
+      return () => media.revert();
+    },
+    { scope: sidebar, dependencies: [menuOpen], revertOnUpdate: true },
+  );
   useLayoutEffect(() => {
     if (!menuOpen) return;
     sidebar.current?.querySelector('a')?.focus();
@@ -113,7 +141,7 @@ export default function AppLayout() {
       <aside
         ref={sidebar}
         id="app-sidebar"
-        className={`app-sidebar ${menuOpen ? 'is-open' : ''}`}
+        className={`app-sidebar js ${menuOpen ? 'is-open' : ''}`}
       >
         <Link to="/" className="brand-lockup" onClick={navigate}>
           <span className="brand-mark">
@@ -123,7 +151,7 @@ export default function AppLayout() {
             Labspace<small>Equipment & reservations</small>
           </span>
         </Link>
-        <p className="nav-caption">Workspace</p>
+        <p className="nav-caption">{admin ? 'Management' : 'Laboratory'}</p>
         <nav aria-label="Main navigation" className="side-nav">
           {links.map((link) => (
             <NavLink
@@ -140,13 +168,6 @@ export default function AppLayout() {
             </NavLink>
           ))}
         </nav>
-        <div className="sidebar-note">
-          <Icon name="lab" />
-          <p>
-            Make room for discovery.
-            <span>Shared equipment. Better access.</span>
-          </p>
-        </div>
         <div className="sidebar-account">
           <span className="avatar">{[...user.name][0].toUpperCase()}</span>
           <div>
@@ -172,13 +193,12 @@ export default function AppLayout() {
             >
               <Icon name="menu" />
             </button>
-            <span>Workspace</span>
+            <span>Labspace</span>
             <span className="breadcrumb-divider">/</span>
             <strong>{current}</strong>
           </div>
           <span className="workspace-role">
-            <span className="presence-dot" />
-            {admin ? 'Admin workspace' : 'Student workspace'}
+            {admin ? 'Administrator' : 'Student'}
           </span>
         </header>
         <main id="main-content" className="workspace-content" tabIndex={-1}>
@@ -187,7 +207,7 @@ export default function AppLayout() {
         </main>
         <footer className="workspace-footer">
           <span>Lab Equipment Reservation System</span>
-          <span>Laboratory time · Asia/Colombo</span>
+          <span>Booking timezone: Asia/Colombo</span>
         </footer>
       </div>
     </div>

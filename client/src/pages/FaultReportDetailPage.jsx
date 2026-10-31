@@ -104,7 +104,7 @@ function FaultReportDetail({ id }) {
                     {data.equipment.name}
                   </Link>
                 )}{' '}
-                · {data.equipment.assetCode} · {data.equipment.location}
+                , {data.equipment.assetCode}, {data.equipment.location}
               </>
             ) : (
               'Equipment no longer available'

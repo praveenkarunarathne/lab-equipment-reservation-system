@@ -40,6 +40,11 @@ function EquipmentForm({ initial }) {
         <Link to="/admin/equipment">Back to manage equipment</Link>
       </p>
       <h1>{initial ? 'Edit equipment' : 'Add equipment'}</h1>
+      <p className="page-description">
+        {initial
+          ? 'Update catalog details. Availability is managed on the equipment detail page.'
+          : 'Enter the asset details to add an available item to the catalog.'}
+      </p>
       {error && <p role="alert">{error.message}</p>}
       <form className="equipment-form" onSubmit={submit}>
         <fieldset disabled={busy}>

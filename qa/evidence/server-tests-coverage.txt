@@ -1,0 +1,22 @@
+﻿
+ RUN  v5.0.3 D:/QA/lab-equipment-reservation-system/server
+      Coverage enabled with v8
+
+
+ Test Files  17 passed (17)
+      Tests  275 passed | 1 expected fail (276)
+   Start at  19:39:28
+   Duration  124.51s (tests 63%, import 36%, transform 1%)
+
+     Import  84 modules were evaluated 134 times · 43.41s total, 36% of tracked time
+             ~16.20s faster with isolate: false — shared modules are evaluated once per worker instead of once per file
+             learn more: https://vitest.dev/guide/improving-performance#test-isolation
+
+ % Coverage report from v8
+
+=============================== Coverage summary ===============================
+Statements   : 98.31% ( 582/592 )
+Branches     : 96.1% ( 296/308 )
+Functions    : 98.03% ( 150/153 )
+Lines        : 99.11% ( 557/562 )
+================================================================================

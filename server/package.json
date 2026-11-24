@@ -11,7 +11,10 @@
     "db:seed-admin": "node --env-file-if-exists=../.env src/db/seedAdmin.js",
     "db:seed-demo": "node --env-file-if-exists=../.env src/db/seedDemo.js",
     "db:replset-init": "node --env-file-if-exists=../.env src/db/initReplicaSet.js",
-    "db:check": "node --env-file-if-exists=../.env src/db/checkTransaction.js"
+    "db:check": "node --env-file-if-exists=../.env src/db/checkTransaction.js",
+    "test:qa": "vitest run test/qa",
+    "test:coverage": "vitest run --coverage",
+    "test:bdd": "cucumber-js"
   },
   "dependencies": {
     "@date-fns/tz": "1.5.0",
@@ -28,6 +31,8 @@
     "zod": "4.6.5"
   },
   "devDependencies": {
+    "@cucumber/cucumber": "12.9.0",
+    "@vitest/coverage-v8": "5.0.3",
     "mongodb-memory-server": "11.3.0",
     "supertest": "7.3.1"
   }

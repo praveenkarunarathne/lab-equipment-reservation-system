@@ -1,0 +1,282 @@
+[
+  {
+    "filePath": "client/src/components/AppLayout.jsx",
+    "messages": [
+      {
+        "ruleId": "sonarjs/no-duplicated-branches",
+        "severity": 2,
+        "message": "This branch's code block is the same as the block for the branch on line 57.",
+        "line": 63,
+        "column": 70,
+        "messageId": "sameConditionalBlock",
+        "endLine": 66,
+        "endColumn": 8
+      },
+      {
+        "ruleId": "sonarjs/no-nested-conditional",
+        "severity": 2,
+        "message": "Extract this nested ternary operation into an independent statement.",
+        "line": 103,
+        "column": 9,
+        "messageId": "extractTernary",
+        "endLine": 105,
+        "endColumn": 29
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 2,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "client/src/components/AuthForm.jsx",
+    "messages": [
+      {
+        "ruleId": "sonarjs/no-nested-conditional",
+        "severity": 2,
+        "message": "Extract this nested ternary operation into an independent statement.",
+        "line": 99,
+        "column": 25,
+        "messageId": "extractTernary",
+        "endLine": 101,
+        "endColumn": 37
+      },
+      {
+        "ruleId": "sonarjs/no-nested-conditional",
+        "severity": 2,
+        "message": "Extract this nested ternary operation into an independent statement.",
+        "line": 109,
+        "column": 27,
+        "messageId": "extractTernary",
+        "endLine": 111,
+        "endColumn": 35
+      },
+      {
+        "ruleId": "sonarjs/no-nested-conditional",
+        "severity": 2,
+        "message": "Extract this nested ternary operation into an independent statement.",
+        "line": 115,
+        "column": 27,
+        "messageId": "extractTernary",
+        "endLine": 117,
+        "endColumn": 47
+      },
+      {
+        "ruleId": "sonarjs/no-nested-conditional",
+        "severity": 2,
+        "message": "Extract this nested ternary operation into an independent statement.",
+        "line": 118,
+        "column": 27,
+        "messageId": "extractTernary",
+        "endLine": 120,
+        "endColumn": 36
+      },
+      {
+        "ruleId": "sonarjs/no-nested-conditional",
+        "severity": 2,
+        "message": "Extract this nested ternary operation into an independent statement.",
+        "line": 127,
+        "column": 27,
+        "messageId": "extractTernary",
+        "endLine": 129,
+        "endColumn": 38
+      },
+      {
+        "ruleId": "sonarjs/no-nested-conditional",
+        "severity": 2,
+        "message": "Extract this nested ternary operation into an independent statement.",
+        "line": 146,
+        "column": 40,
+        "messageId": "extractTernary",
+        "endLine": 146,
+        "endColumn": 79
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 6,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "client/src/components/BookingForm.jsx",
+    "messages": [
+      {
+        "ruleId": "sonarjs/no-nested-conditional",
+        "severity": 2,
+        "message": "Extract this nested ternary operation into an independent statement.",
+        "line": 56,
+        "column": 13,
+        "messageId": "extractTernary",
+        "endLine": 90,
+        "endColumn": 10
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "client/src/components/EquipmentLifecycleControls.jsx",
+    "messages": [
+      {
+        "ruleId": "sonarjs/no-nested-conditional",
+        "severity": 2,
+        "message": "Extract this nested ternary operation into an independent statement.",
+        "line": 118,
+        "column": 15,
+        "messageId": "extractTernary",
+        "endLine": 129,
+        "endColumn": 12
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "client/src/pages/FaultReportNewPage.jsx",
+    "messages": [
+      {
+        "ruleId": "sonarjs/no-nested-conditional",
+        "severity": 2,
+        "message": "Extract this nested ternary operation into an independent statement.",
+        "line": 81,
+        "column": 21,
+        "messageId": "extractTernary",
+        "endLine": 85,
+        "endColumn": 18
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "client/src/pages/admin/AdminEquipmentFormPage.jsx",
+    "messages": [
+      {
+        "ruleId": "sonarjs/no-nested-conditional",
+        "severity": 2,
+        "message": "Extract this nested ternary operation into an independent statement.",
+        "line": 79,
+        "column": 33,
+        "messageId": "extractTernary",
+        "endLine": 79,
+        "endColumn": 80
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "client/src/routes/AppRoutes.jsx",
+    "messages": [
+      {
+        "ruleId": "sonarjs/no-nested-conditional",
+        "severity": 2,
+        "message": "Extract this nested ternary operation into an independent statement.",
+        "line": 42,
+        "column": 19,
+        "messageId": "extractTernary",
+        "endLine": 44,
+        "endColumn": 33
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "server/src/db/seeds/demoData.js",
+    "messages": [
+      {
+        "ruleId": "sonarjs/no-nested-conditional",
+        "severity": 2,
+        "message": "Extract this nested ternary operation into an independent statement.",
+        "line": 105,
+        "column": 11,
+        "messageId": "extractTernary",
+        "endLine": 107,
+        "endColumn": 18
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "server/src/middleware/validate.js",
+    "messages": [
+      {
+        "ruleId": "sonarjs/no-nested-assignment",
+        "severity": 2,
+        "message": "Extract the assignment of \"fieldErrors[key]\" from this expression.",
+        "line": 14,
+        "column": 29,
+        "messageId": "extractAssignment",
+        "endLine": 14,
+        "endColumn": 32
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "server/src/modules/reservations/reservation.dto.js",
+    "messages": [
+      {
+        "ruleId": "sonarjs/no-nested-conditional",
+        "severity": 2,
+        "message": "Extract this nested ternary operation into an independent statement.",
+        "line": 8,
+        "column": 9,
+        "messageId": "extractTernary",
+        "endLine": 10,
+        "endColumn": 17
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  }
+]

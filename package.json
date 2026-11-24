@@ -28,7 +28,12 @@
     "db:seed-admin": "bun run --cwd server db:seed-admin",
     "db:seed-demo": "bun run --cwd server db:seed-demo",
     "db:replset-init": "bun run --cwd server db:replset-init",
-    "db:check": "bun run --cwd server db:check"
+    "db:check": "bun run --cwd server db:check",
+    "test:qa": "bun run --cwd server test:qa",
+    "test:bdd": "bun run --cwd server test:bdd",
+    "test:coverage": "bun run --cwd server test:coverage",
+    "test:api": "newman run qa/postman/lab-reservation.postman_collection.json -e qa/postman/local.postman_environment.json",
+    "analyse:sonarjs": "eslint --no-config-lookup -c qa/sonar/eslint.sonar.config.js server/src client/src"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
@@ -36,7 +41,9 @@
     "eslint": "10.10.0",
     "eslint-plugin-react-hooks": "7.1.1",
     "eslint-plugin-react-refresh": "0.5.7",
+    "eslint-plugin-sonarjs": "4.2.2",
     "globals": "17.12.0",
+    "newman": "6.2.2",
     "prettier": "3.9.9",
     "vitest": "5.0.3"
   }

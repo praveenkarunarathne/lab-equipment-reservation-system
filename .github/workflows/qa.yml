@@ -1,0 +1,57 @@
+# EC4206 §3.6 — QA pipeline: runs the assignment test suites on every push / PR
+# and (when a SONAR_TOKEN secret exists) sends coverage to SonarQube/SonarCloud.
+name: QA
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: qa-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  qa:
+    name: Unit, black/white-box, OWASP and BDD
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MONGOMS_VERSION: 8.0.32
+      MONGOMS_DOWNLOAD_DIR: ${{ github.workspace }}/.cache/mongodb-binaries
+      MONGOMS_DISABLE_POSTINSTALL: '1'
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # full history for SonarQube blame data
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: .bun-version
+      - uses: actions/cache@v4
+        with:
+          path: .cache/mongodb-binaries
+          key: mongodb-${{ runner.os }}-8.0.32
+      - run: bun install --frozen-lockfile
+      - name: Server tests with coverage (incl. EC4206 QA suites)
+        run: bun run test:coverage
+      - name: Client tests
+        run: bun run --cwd client test:coverage
+      - name: Cucumber BDD scenarios
+        run: bun run test:bdd
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: qa-reports
+          path: |
+            server/coverage/
+            server/reports/
+            client/coverage/
+          retention-days: 14
+      - name: SonarQube scan
+        if: ${{ env.SONAR_TOKEN != '' }}
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}

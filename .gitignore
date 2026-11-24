@@ -11,3 +11,9 @@ test-results/
 .playwright-mcp/
 .cache/
 .hallmark/
+
+# EC4206 QA outputs
+reports/
+qa/jmeter/results*.jtl
+qa/jmeter/report*/
+.scannerwork/

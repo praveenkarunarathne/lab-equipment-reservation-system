@@ -1,0 +1,7 @@
+bun.exe : This Node.js version (v26.13.0) has not been tested with this version of Cucumber; it should work normally, 
+but please raise an issue if you see anything unexpected.
+..................................................................
+
+10 scenarios (10 passed)
+56 steps (56 passed)
+0m04.227s (executing steps: 0m01.762s)

@@ -13,6 +13,8 @@ export default [
       '.cache/**',
       '.hallmark/**',
       '.playwright-mcp/**',
+      'qa/jmeter/report*/**',
+      '**/reports/**',
     ],
   },
   js.configs.recommended,

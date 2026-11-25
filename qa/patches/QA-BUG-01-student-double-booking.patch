@@ -1,0 +1,38 @@
+diff --git a/server/src/middleware/errorHandler.js b/server/src/middleware/errorHandler.js
+index 7974eeb..2240bad 100644
+--- a/server/src/middleware/errorHandler.js
++++ b/server/src/middleware/errorHandler.js
+@@ -38,6 +38,13 @@ function publicError(error) {
+         'Asset code already exists.',
+       );
+     }
++    if (error.keyPattern?.studentId && error.keyPattern?.startAt) {
++      return new AppError(
++        409,
++        'STUDENT_SLOT_CONFLICT',
++        'You already have a reservation at this time.',
++      );
++    }
+     if (error.keyPattern?.equipmentId && error.keyPattern?.startAt) {
+       return new AppError(
+         409,
+diff --git a/server/src/modules/reservations/reservation.model.js b/server/src/modules/reservations/reservation.model.js
+index 86e50e3..5aa8c12 100644
+--- a/server/src/modules/reservations/reservation.model.js
++++ b/server/src/modules/reservations/reservation.model.js
+@@ -49,6 +49,15 @@ reservationSchema.index(
+     name: 'uq_reservation_active_equipment_start',
+   },
+ );
++// QA-BUG-01: a student cannot hold two active bookings for the same hour.
++reservationSchema.index(
++  { studentId: 1, startAt: 1 },
++  {
++    unique: true,
++    partialFilterExpression: { status: 'active' },
++    name: 'uq_reservation_active_student_start',
++  },
++);
+ reservationSchema.index(
+   { studentId: 1, startAt: -1 },
+   { name: 'idx_reservations_student_start' },

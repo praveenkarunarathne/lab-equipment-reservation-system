@@ -1,0 +1,13 @@
+TDD RED — 2026-11-24 19:35 (before fix)
+FAIL test/qa/decisionTable.booking.test.js > DT-1 create reservation > R7 student already holds another item at that hour → 409 STUDENT_SLOT_CONFLICT
+TypeError: Cannot read properties of undefined (reading 'code')   ← second booking returned 201 Created
+Tests  1 failed | 28 passed (29)
+
+TDD GREEN — 2026-11-24 19:41 (fix from qa/patches/QA-BUG-01-student-double-booking.patch applied)
+Test Files  5 passed (5)   Tests  124 passed (124)
+
+REFACTOR / REGRESSION — full server suite with the fix: 16 existing tests failed with
+E11000 on uq_reservation_active_student_start. Cause: existing fixtures and the demo seed
+(server/src/db/seeds/demoData.js) deliberately give one student several items in the same
+hour. The rule change therefore needs a team decision + fixture/seed update before merging;
+the patch is kept separate and R7 is marked test.fails until then.

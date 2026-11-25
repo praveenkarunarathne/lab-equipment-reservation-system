@@ -8,3 +8,5 @@ test-results/
 .cache/
 .hallmark/
 .playwright-mcp/
+qa/jmeter/report*/
+server/reports/

@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage --coverage.provider=v8 --coverage.include=src/**/*.{js,jsx} --coverage.exclude=src/test/** --coverage.reporter=text-summary --coverage.reporter=lcov"
   },
   "dependencies": {
     "@gsap/react": "2.1.2",
@@ -17,11 +18,12 @@
     "react-router": "8.3.1"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "6.1.2",
-    "vite": "8.3.3",
-    "jsdom": "30.0.1",
+    "@testing-library/jest-dom": "7.0.1",
     "@testing-library/react": "16.3.3",
     "@testing-library/user-event": "14.6.7",
-    "@testing-library/jest-dom": "7.0.1"
+    "@vitejs/plugin-react": "6.1.2",
+    "@vitest/coverage-v8": "5.0.3",
+    "jsdom": "30.0.1",
+    "vite": "8.3.3"
   }
 }

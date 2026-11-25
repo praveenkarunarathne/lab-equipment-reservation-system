@@ -1,0 +1,72 @@
+EC4206 – Lab Equipment Reservation API
+
+→ API-01 Health check
+  GET https://127.0.0.1:4310/api/v1/health [200 OK, 1.01kB, 34ms]
+  √  200 and database ok
+  √  responds within 500 ms
+
+→ API-02 Get CSRF token
+  GET https://127.0.0.1:4310/api/v1/auth/csrf [200 OK, 1.25kB, 14ms]
+  √  64-hex token issued
+
+→ API-03 Equipment list requires sign-in
+  GET https://127.0.0.1:4310/api/v1/equipment [401 Unauthorized, 1.1kB, 6ms]
+  √  401 AUTH_REQUIRED
+
+→ API-04 Login with wrong password
+  POST https://127.0.0.1:4310/api/v1/auth/login [401 Unauthorized, 1.22kB, 56ms]
+  √  401 generic message
+
+→ API-05 Login as student
+  POST https://127.0.0.1:4310/api/v1/auth/login [200 OK, 1.47kB, 70ms]
+  √  200 student
+
+→ API-06 Browse equipment
+  GET https://127.0.0.1:4310/api/v1/equipment?page=1&limit=12&sort=name_asc [200 OK, 1.67kB, 9ms]
+  √  200 with pagination
+  √  at least one available item
+
+→ API-07 Availability of first available item
+  GET https://127.0.0.1:4310/api/v1/equipment/6b059b6cf12b0c46d3054236/availability [200 OK, 10.32kB, 20ms]
+  √  bookable, Colombo timezone, 60-minute slots
+  √  at most 80 slots
+
+→ API-08 Book the last offered slot
+  POST https://127.0.0.1:4310/api/v1/reservations [201 Created, 1.33kB, 90ms]
+  √  201 active reservation
+
+→ API-09 Book the same slot again
+  POST https://127.0.0.1:4310/api/v1/reservations [409 Conflict, 1.12kB, 71ms]
+  √  409 conflict
+
+→ API-10 Student cannot open admin dashboard
+  GET https://127.0.0.1:4310/api/v1/admin/dashboard [403 Forbidden, 1.11kB, 7ms]
+  √  403 FORBIDDEN
+
+→ API-11 Cancel the reservation
+  PATCH https://127.0.0.1:4310/api/v1/reservations/6b059be6f12b0c46d305423a/cancel [200 OK, 1.36kB, 56ms]
+  √  200 cancelled by student
+
+→ API-12 Sign out
+  POST https://127.0.0.1:4310/api/v1/auth/logout [204 No Content, 1.02kB, 14ms]
+  √  204
+
+┌─────────────────────────┬──────────────────┬──────────────────┐
+│                         │         executed │           failed │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│              iterations │                1 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│                requests │               12 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│            test-scripts │               12 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│      prerequest-scripts │               12 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│              assertions │               15 │                0 │
+├─────────────────────────┴──────────────────┴──────────────────┤
+│ total run duration: 1480ms                                    │
+├───────────────────────────────────────────────────────────────┤
+│ total data received: 11.62kB (approx)                         │
+├───────────────────────────────────────────────────────────────┤
+│ average response time: 37ms [min: 6ms, max: 90ms, s.d.: 28ms] │
+└───────────────────────────────────────────────────────────────┘

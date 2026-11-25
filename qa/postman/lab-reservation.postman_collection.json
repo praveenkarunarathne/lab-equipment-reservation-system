@@ -1,0 +1,247 @@
+{
+  "info": {
+    "name": "EC4206 – Lab Equipment Reservation API",
+    "description": "§3.6 API automation. Run with Newman against the E2E server (bun --no-env-file run test:e2e:server):\n  npx newman run qa/postman/lab-reservation.postman_collection.json -e qa/postman/local.postman_environment.json --insecure -r cli,htmlextra",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.request.headers.upsert({ key: 'Origin', value: pm.environment.get('baseUrl') });",
+          "if (pm.environment.get('csrf')) pm.request.headers.upsert({ key: 'X-CSRF-Token', value: pm.environment.get('csrf') });"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "API-01 Health check",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/health" },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('200 and database ok', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().data.database).to.eql('ok'); });",
+              "pm.test('responds within 500 ms', () => pm.expect(pm.response.responseTime).to.be.below(500));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "API-02 Get CSRF token",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/auth/csrf" },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('64-hex token issued', () => pm.expect(pm.response.json().data.csrfToken).to.match(/^[a-f0-9]{64}$/));",
+              "pm.environment.set('csrf', pm.response.json().data.csrfToken);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "API-03 Equipment list requires sign-in",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/equipment" },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('401 AUTH_REQUIRED', () => { pm.response.to.have.status(401); pm.expect(pm.response.json().error.code).to.eql('AUTH_REQUIRED'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "API-04 Login with wrong password",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/v1/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\":\"{{studentEmail}}\",\"password\":\"definitely not the password\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('401 generic message', () => { pm.response.to.have.status(401); pm.expect(pm.response.json().error.message).to.eql('Invalid email or password.'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "API-05 Login as student",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/v1/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\":\"{{studentEmail}}\",\"password\":\"{{password}}\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('200 student', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().data.user.role).to.eql('student'); });",
+              "pm.environment.set('csrf', pm.response.json().data.csrfToken);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "API-06 Browse equipment",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/equipment?page=1&limit=12&sort=name_asc"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('200 with pagination', () => { pm.response.to.have.status(200); pm.expect(body.pagination.limit).to.eql(12); });",
+              "const item = body.data.find((e) => e.status === 'available');",
+              "pm.test('at least one available item', () => pm.expect(item).to.be.an('object'));",
+              "pm.environment.set('equipmentId', item.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "API-07 Availability of first available item",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/equipment/{{equipmentId}}/availability"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const avail = pm.response.json().data;",
+              "pm.test('bookable, Colombo timezone, 60-minute slots', () => { pm.expect(avail.bookable).to.eql(true); pm.expect(avail.timezone).to.eql('Asia/Colombo'); pm.expect(avail.slotDurationMinutes).to.eql(60); });",
+              "pm.test('at most 80 slots', () => pm.expect(avail.slots.length).to.be.within(1, 80));",
+              "pm.environment.set('slot', avail.slots[avail.slots.length - 1].startAt);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "API-08 Book the last offered slot",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/v1/reservations",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"equipmentId\":\"{{equipmentId}}\",\"startAt\":\"{{slot}}\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('201 active reservation', () => { pm.response.to.have.status(201); pm.expect(pm.response.json().data.status).to.eql('active'); });",
+              "pm.environment.set('reservationId', pm.response.json().data.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "API-09 Book the same slot again",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/v1/reservations",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"equipmentId\":\"{{equipmentId}}\",\"startAt\":\"{{slot}}\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('409 conflict', () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "API-10 Student cannot open admin dashboard",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/admin/dashboard"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('403 FORBIDDEN', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "API-11 Cancel the reservation",
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/v1/reservations/{{reservationId}}/cancel",
+        "body": { "mode": "raw", "raw": "{}" }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('200 cancelled by student', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().data.cancellationReason).to.eql('student_cancelled'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "API-12 Sign out",
+      "request": { "method": "POST", "url": "{{baseUrl}}/api/v1/auth/logout" },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('204', () => pm.response.to.have.status(204));",
+              "pm.environment.unset('csrf');"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
